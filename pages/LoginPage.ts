@@ -25,7 +25,7 @@ export class LoginPage {
    */
 
   async gotoOrangeHRM() {
-    //await this.page.goto(process.env.BASE_URL);
+    await this.page.goto('/');
   }
 
   async loginToOrgangeHRM(userName: string, password: string) {
