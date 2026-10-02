@@ -4,14 +4,33 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:headed": "playwright test --headed"
+    "test:headed": "playwright test --headed",
+    "test_SIT_ch_headed": "cross-env ENV_NAME=SIT npx playwright test --project=chromium --headed",
+    "test_dev_ff_heeded": "cross-env ENV_NAME=dev npx playwright test --project=firefox --headed",
+    "test_SIT_ch_hl": "cross-env ENV_NAME=SIT npx playwright test --project=chromium",
+    "test_SIT_ff_hl": "cross-env ENV_NAME=dev npx playwright test --project=firefox",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
-    "@types/node": "^26.6.3"
+    "@types/node": "^26.6.3",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-playwright": "^2.12.0",
+    "prettier": "^3.9.9",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0"
+  },
+  "dependencies": {
+    "cross-env": "^10.1.0",
+    "dotenv": "^18.0.5"
   }
 }

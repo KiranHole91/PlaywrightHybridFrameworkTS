@@ -6,7 +6,8 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-
+.prettierignore
+.prettierrc
 .env
 .env.*
 .ds_store
