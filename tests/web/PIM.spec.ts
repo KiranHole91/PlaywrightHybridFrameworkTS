@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixtures/POMfixture';
+import { createEmployee } from '../../test-data/employe.factory';
 
 test.beforeEach(async ({ loginPage, pimPage }) => {
   await loginPage.gotoOrangeHRM();
@@ -10,9 +11,10 @@ test.beforeEach(async ({ loginPage, pimPage }) => {
 const uniqueID = () => Date.now().toString().slice(-6);
 
 test('Add and validate added Employee in Employee list using auto-suggest', async ({ pimPage }) => {
+  const user = createEmployee();
   const id = uniqueID();
-  const lastName = `search${id}`;
-  await pimPage.addEmployee('kiran', lastName, id);
+  const lastName = `${user.employeeLastName}${id}`;
+  await pimPage.addEmployee(user.employeeFirstName, lastName, id);
 
   await pimPage.searchEmployee(lastName);
 
@@ -20,13 +22,14 @@ test('Add and validate added Employee in Employee list using auto-suggest', asyn
   const row = pimPage.rowFor(lastName);
   await expect(row).toHaveCount(1);
   await expect(row).toContainText(id);
-  await expect(row).toContainText('kiran');
+  await expect(row).toContainText(user.employeeFirstName);
 });
 
 test('Delete an added Employee', async ({ pimPage }) => {
+  const user = createEmployee();
   const id = uniqueID();
-  const lastName = `delete${id}`;
-  await pimPage.addEmployee('kiran', lastName, id);
+  const lastName = `${user.employeeLastName}${id}`;
+  await pimPage.addEmployee(user.employeeFirstName, lastName, id);
 
   await pimPage.deleteEmployee(lastName);
 

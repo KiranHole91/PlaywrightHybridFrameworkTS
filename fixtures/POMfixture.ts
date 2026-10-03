@@ -2,11 +2,13 @@ import { test as baseTest } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { SideMenuPage } from '../pages/SideMenuPage';
 import { PIMPage } from '../pages/PIMPage';  
+import { AdminPage } from '../pages/AdminPage';
 
 type POMFixture = {
   loginPage: LoginPage;
   sideMenuPage: SideMenuPage;
   pimPage : PIMPage;
+  adminPage : AdminPage;
 };
 
 export const test = baseTest.extend<POMFixture>({
@@ -21,6 +23,10 @@ export const test = baseTest.extend<POMFixture>({
 
   pimPage: async ({page}, use) => {
    await use (new PIMPage(page));
+  },
+
+  adminPage: async ({page}, use) =>{
+    await use(new AdminPage(page));
   }
 
 });
