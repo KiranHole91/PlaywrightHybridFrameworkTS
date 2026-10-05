@@ -1,6 +1,9 @@
-import { test, expect } from '../../fixtures/POMfixture';
+import { test } from '../../fixtures/commonFixture';
 
-test('Login to OrangeHRM', async ({ loginPage }) => {
+test('Login to OrangeHRM', async ({ loginPage, encdec }) => {
   await loginPage.gotoOrangeHRM();
-  await loginPage.loginToOrgangeHRM(process.env.USER_NAME!, process.env.PASSWORD!);
+  await loginPage.loginToOrgangeHRM(
+    encdec.decryptData(process.env.USER_NAME!),
+    encdec.decryptData(process.env.PASSWORD!),
+  );
 });

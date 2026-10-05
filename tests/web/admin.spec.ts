@@ -1,11 +1,14 @@
-import { test, expect } from '../../fixtures/POMfixture';
+import { test, expect } from '../../fixtures/commonFixture';
 import { createEmployee } from '../../test-data/employe.factory';
 import { PIMPage } from '../../pages/PIMPage';
 import { AdminPage } from '../../pages/AdminPage';
 
-test.beforeEach(async ({ loginPage }) => {
+test.beforeEach(async ({ loginPage, encdec }) => {
   await loginPage.gotoOrangeHRM();
-  await loginPage.loginToOrgangeHRM(process.env.USER_NAME!, process.env.PASSWORD!);
+  await loginPage.loginToOrgangeHRM(
+    encdec.decryptData(process.env.USER_NAME!),
+    encdec.decryptData(process.env.PASSWORD!),
+  );
 });
 
 const uniqueID = () => Date.now().toString().slice(-6);

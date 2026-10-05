@@ -1,9 +1,12 @@
-import { test, expect } from '../../fixtures/POMfixture';
 import { createEmployee } from '../../test-data/employe.factory';
+import { test, expect } from '../../fixtures/commonFixture';
 
-test.beforeEach(async ({ loginPage, pimPage }) => {
+test.beforeEach(async ({ loginPage, pimPage, encdec }) => {
   await loginPage.gotoOrangeHRM();
-  await loginPage.loginToOrgangeHRM(process.env.USER_NAME!, process.env.PASSWORD!);
+  await loginPage.loginToOrgangeHRM(
+    encdec.decryptData(process.env.USER_NAME!),
+    encdec.decryptData(process.env.PASSWORD!),
+  );
   await pimPage.gotoPIM();
 });
 
