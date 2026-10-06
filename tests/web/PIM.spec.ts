@@ -1,12 +1,10 @@
 import { createEmployee } from '../../test-data/employe.factory';
 import { test, expect } from '../../fixtures/commonFixture';
 
-test.beforeEach(async ({ loginPage, pimPage, encdec }) => {
+// Logged-in session comes from storageState (auth.json), created by global.setup.ts
+test.beforeEach(async ({ page, loginPage, pimPage }) => {
   await loginPage.gotoOrangeHRM();
-  await loginPage.loginToOrgangeHRM(
-    encdec.decryptData(process.env.USER_NAME!),
-    encdec.decryptData(process.env.PASSWORD!),
-  );
+  await expect(page).toHaveURL(/dashboard/); // fails fast if auth.json is stale
   await pimPage.gotoPIM();
 });
 

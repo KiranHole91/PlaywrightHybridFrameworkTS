@@ -3,12 +3,14 @@ import { LoginPage } from '../pages/LoginPage';
 import { SideMenuPage } from '../pages/SideMenuPage';
 import { PIMPage } from '../pages/PIMPage';  
 import { AdminPage } from '../pages/AdminPage';
+import { DashboardPage } from '../pages/DashboardPage';
 
 type POMFixture = {
   loginPage: LoginPage;
   sideMenuPage: SideMenuPage;
   pimPage : PIMPage;
   adminPage : AdminPage;
+  dashboardPage : DashboardPage;
 };
 
 export const test = baseTest.extend<POMFixture>({
@@ -27,6 +29,11 @@ export const test = baseTest.extend<POMFixture>({
 
   adminPage: async ({page}, use) =>{
     await use(new AdminPage(page));
+  },
+
+  dashboardPage : async({page}, use) => {
+
+    await use(new DashboardPage(page));
   }
 
 });

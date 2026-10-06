@@ -1,7 +1,5 @@
-import { test, expect } from '../../fixtures/commonFixture';
+import { expect, test } from '../../fixtures/commonFixture';
 
-// Projects load the saved session (auth.json); clear it so this spec tests the real login flow
-test.use({ storageState: { cookies: [], origins: [] } });
 
 test('Login to OrangeHRM', async ({ page, loginPage, dashboardPage, encdec }) => {
   await loginPage.gotoOrangeHRM();
@@ -9,6 +7,11 @@ test('Login to OrangeHRM', async ({ page, loginPage, dashboardPage, encdec }) =>
     encdec.decryptData(process.env.USER_NAME!),
     encdec.decryptData(process.env.PASSWORD!),
   );
-  await expect(page).toHaveURL(/dashboard/);
+
+  await page.waitForURL(`${process.env.BASE_URL}/web/index.php/dashboard/index`)
   await expect(dashboardPage.dashboardTitletext).toHaveText('Dashboard');
+
+  await  page.context().storageState({
+        path : './auth-file/.auth/auth.json'
+    })
 });

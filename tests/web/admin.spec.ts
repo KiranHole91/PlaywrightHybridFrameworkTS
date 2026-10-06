@@ -3,12 +3,10 @@ import { createEmployee } from '../../test-data/employe.factory';
 import { PIMPage } from '../../pages/PIMPage';
 import { AdminPage } from '../../pages/AdminPage';
 
-test.beforeEach(async ({ loginPage, encdec }) => {
+// Logged-in session comes from storageState (auth.json), created by global.setup.ts
+test.beforeEach(async ({ page, loginPage }) => {
   await loginPage.gotoOrangeHRM();
-  await loginPage.loginToOrgangeHRM(
-    encdec.decryptData(process.env.USER_NAME!),
-    encdec.decryptData(process.env.PASSWORD!),
-  );
+  await expect(page).toHaveURL(/dashboard/); // fails fast if auth.json is stale
 });
 
 const uniqueID = () => Date.now().toString().slice(-6);

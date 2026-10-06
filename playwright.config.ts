@@ -11,7 +11,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html', { open: 'always' }]], //Array of tuples
-  globalTimeout: 120 * 1000,
+  globalTimeout: 1*60*60*1000,
 
   use: {
     actionTimeout: 10000,
@@ -25,18 +25,32 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name : 'setup',
+      testMatch : 'global.setup.ts'
+    },
+    
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      dependencies : ['setup'],
+      use: { ...devices['Desktop Chrome'],
+        storageState : './auth-file/.auth/auth.json'
+       },
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Firefox'],
+        storageState: './auth-file/.auth/auth.json'
+       },
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      dependencies : ['setup'],
+      use: { ...devices['Desktop Safari'],
+        storageState: './auth-file/.auth/auth.json'
+       },
     },
 
     /* Test against mobile viewports. */
