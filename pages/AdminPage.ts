@@ -39,6 +39,7 @@ export class AdminPage {
 
   async gotoAdmin() {
     await this.sideMenuAdmin.click();
+    await expect(this.page).toHaveURL(/admin\/viewSystemUsers/);
   }
 
   async addAdminUser(employeeName: string, username: string, password: string) {

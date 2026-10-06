@@ -1,13 +1,8 @@
-import { test, expect } from '../../fixtures/commonFixture';
+import { test, expect } from '../../fixtures/hooks-fixture';
 import { createEmployee } from '../../test-data/employe.factory';
-import { PIMPage } from '../../pages/PIMPage';
-import { AdminPage } from '../../pages/AdminPage';
+import type { PIMPage } from '../../pages/PIMPage';
+import type { AdminPage } from '../../pages/AdminPage';
 
-// Logged-in session comes from storageState (auth.json), created by global.setup.ts
-test.beforeEach(async ({ page, loginPage }) => {
-  await loginPage.gotoOrangeHRM();
-  await expect(page).toHaveURL(/dashboard/); // fails fast if auth.json is stale
-});
 
 const uniqueID = () => Date.now().toString().slice(-6);
 
@@ -29,14 +24,14 @@ test.describe('Admin user management', () => {
   // Each test creates an employee and an admin user, which is slow on the demo site
   test.describe.configure({ timeout: 60000 });
 
-  test('Create an Admin user', async ({ pimPage, adminPage }) => {
+  test('Create an Admin user', async ({ gotoURL, pimPage, adminPage }) => {
     const username = await createAdminUser(pimPage, adminPage);
     // addAdminUser already checks the "Successfully Saved" toast
     await adminPage.searchUser(username);
     await expect(adminPage.rowFor(username)).toHaveCount(1);
   });
 
-  test('Search an Admin user', async ({ pimPage, adminPage }) => {
+  test('Search an Admin user', async ({ gotoURL, pimPage, adminPage }) => {
     const username = await createAdminUser(pimPage, adminPage);
     await adminPage.searchUser(username);
     const row = adminPage.rowFor(username);
@@ -44,7 +39,7 @@ test.describe('Admin user management', () => {
     await expect(row).toContainText('Admin');
   });
 
-  test('Delete an Admin user', async ({ pimPage, adminPage }) => {
+  test('Delete an Admin user', async ({ gotoURL, pimPage, adminPage }) => {
     const username = await createAdminUser(pimPage, adminPage);
     await adminPage.searchUser(username);
     await adminPage.deleteUser(username);

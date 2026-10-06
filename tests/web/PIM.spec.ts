@@ -1,20 +1,15 @@
 import { createEmployee } from '../../test-data/employe.factory';
-import { test, expect } from '../../fixtures/commonFixture';
+import { test, expect } from '../../fixtures/hooks-fixture';
 
-// Logged-in session comes from storageState (auth.json), created by global.setup.ts
-test.beforeEach(async ({ page, loginPage, pimPage }) => {
-  await loginPage.gotoOrangeHRM();
-  await expect(page).toHaveURL(/dashboard/); // fails fast if auth.json is stale
-  await pimPage.gotoPIM();
-});
 
 // Unique values so reruns don't clash with other employees on the shared demo site
 const uniqueID = () => Date.now().toString().slice(-6);
 
-test('Add and validate added Employee in Employee list using auto-suggest', async ({ pimPage }) => {
+test('Add and validate added Employee in Employee list using auto-suggest', async ({ pimPage, gotoURL }) => {
   const user = createEmployee();
   const id = uniqueID();
   const lastName = `${user.employeeLastName}${id}`;
+  await pimPage.gotoPIM();
   await pimPage.addEmployee(user.employeeFirstName, lastName, id);
 
   await pimPage.searchEmployee(lastName);
@@ -26,7 +21,8 @@ test('Add and validate added Employee in Employee list using auto-suggest', asyn
   await expect(row).toContainText(user.employeeFirstName);
 });
 
-test('Delete an added Employee', async ({ pimPage }) => {
+test('Delete an added Employee', async ({ pimPage,gotoURL }) => {
+   await pimPage.gotoPIM();
   const user = createEmployee();
   const id = uniqueID();
   const lastName = `${user.employeeLastName}${id}`;

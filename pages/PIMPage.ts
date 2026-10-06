@@ -43,6 +43,7 @@ export class PIMPage {
 
   async gotoPIM(){
     await this.linkPIM.click();
+    await expect(this.page).toHaveURL(/pim\/viewEmployeeList/);
   }
 
 
@@ -56,7 +57,8 @@ export class PIMPage {
     await this.inputLastName.pressSequentially(employeeLastName);
     await this.inputEmployeeID.fill(String(employeeID));
     await this.buttonSave.click();
-    await expect(this.page).toHaveURL(/pim\/viewPersonalDetails/);
+    // Save is slow on the demo site, so allow more than the default 5s
+    await expect(this.page).toHaveURL(/pim\/viewPersonalDetails/, { timeout: 15000 });
   }
 
   /**

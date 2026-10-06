@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 
 export class SideMenuPage {
   readonly page: Page;
@@ -23,14 +23,20 @@ export class SideMenuPage {
     this.dashboard = page.getByRole('link', { name: 'Dashboard' });
   }
 
+
   async validateSideMenuOptionNavigations() {
-    await this.admin.click();
-    await this.PIM.click();
-    await this.leave.click();
-    await this.time.click();
-    await this.recruitment.click();
-    await this.myInfo.click();
-    await this.personalDetails.click();
-    await this.dashboard.click();
-  }
+  await this.admin.click();
+  await expect(this.page).toHaveURL(/admin/);
+  await this.PIM.click();
+  await expect(this.page).toHaveURL(/pim/);
+  await this.leave.click();
+  await expect(this.page).toHaveURL(/leave/);
+  await this.time.click();
+  await expect(this.page).toHaveURL(/time/);
+  await this.recruitment.click();
+  await expect(this.page).toHaveURL(/recruitment/);
+  await this.myInfo.click();
+  await expect(this.personalDetails).toBeVisible();
 }
+}
+
