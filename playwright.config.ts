@@ -10,7 +10,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [['html', { open: 'always' }]], //Array of tuples
+ //Array of tuples
+  reporter: [
+  ['html', { open: 'never' }],
+  ['allure-playwright', { resultsDir: 'allure-results' }],
+], 
   globalTimeout: 1*60*60*1000,
 
   use: {

@@ -14,6 +14,8 @@ node_modules/
 .log
 Thumbs.db
 .idea
+/allure-results/
+/allure-report/
 
 # Saved login session (storageState)
 auth-file/
