@@ -17,6 +17,11 @@ export class PIMPage {
   readonly resultRows: Locator;
   readonly buttonConfirmDelete: Locator;
   readonly toastMessage: Locator;
+  readonly inputMiddleName: Locator;
+  readonly toggleCreateLogin: Locator;
+  readonly inputUsername: Locator;
+  readonly inputPassword: Locator;
+  readonly inputConfirmPassword: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -26,19 +31,24 @@ export class PIMPage {
     this.inputFirstName = page.getByPlaceholder('First Name');
     this.inputLastName = page.getByPlaceholder('Last Name');
     this.inputEmployeeID = page
-      .locator('.oxd-input-group', { hasText: 'Employee Id' })
-      .locator('input');
+                        .locator('.oxd-input-group', { hasText: 'Employee Id' })
+                        .locator('input');
     this.buttonCancel = page.getByRole('button', { name: 'Cancel' });
     this.buttonSave = page.getByRole('button', { name: 'Save' });
     this.linkPIM = page.getByRole('link', { name: 'PIM' });
     this.inputEmployeeNameSearch = page
-      .locator('.oxd-input-group', { hasText: 'Employee Name' })
-      .getByPlaceholder('Type for hints...');
+                         .locator('.oxd-input-group', { hasText: 'Employee Name' })
+                         .getByPlaceholder('Type for hints...');
     this.autoSuggestList = page.getByRole('listbox');
     this.buttonSearch = page.getByRole('button', { name: 'Search' });
     this.resultRows = page.locator('.oxd-table-body').getByRole('row');
     this.buttonConfirmDelete = page.getByRole('button', { name: 'Yes, Delete' });
     this.toastMessage = page.locator('.oxd-toast');
+    this.inputMiddleName = page.getByPlaceholder('Middle Name');
+    this.toggleCreateLogin = page.locator('.oxd-switch-input');
+    this.inputUsername = page.locator('.oxd-input-group', { hasText: 'Username' }).locator('input');
+    this.inputPassword = page.locator('input[type="password"]').nth(0);
+    this.inputConfirmPassword = page.locator('input[type="password"]').nth(1);
   }
 
   async gotoPIM(){
@@ -56,6 +66,31 @@ export class PIMPage {
     await this.inputFirstName.pressSequentially(employeeFirstName);
     await this.inputLastName.pressSequentially(employeeLastName);
     await this.inputEmployeeID.fill(String(employeeID));
+    await this.buttonSave.click();
+    // Save is slow on the demo site, so allow more than the default 5s
+    await expect(this.page).toHaveURL(/pim\/viewPersonalDetails/, { timeout: 15000 });
+  }
+
+  // Passing login switches on "Create Login Details" and fills the user fields
+  async addEmployeeWithDetails(
+    emp: { firstName: string; middleName?: string; lastName: string; employeeId: string },
+    login?: { username: string; password: string; status: 'Enabled' | 'Disabled' },
+  ) {
+    await this.linkAddEmployee.click();
+    await this.inputFirstName.pressSequentially(emp.firstName);
+    if (emp.middleName) await this.inputMiddleName.fill(emp.middleName);
+    await this.inputLastName.pressSequentially(emp.lastName);
+    await this.inputEmployeeID.fill(emp.employeeId);
+
+    if (login) {
+      await this.toggleCreateLogin.click();
+      await expect(this.inputUsername).toBeVisible();
+      await this.inputUsername.fill(login.username);
+      await this.page.locator('label', { hasText: login.status }).click();
+      await this.inputPassword.fill(login.password);
+      await this.inputConfirmPassword.fill(login.password);
+    }
+
     await this.buttonSave.click();
     // Save is slow on the demo site, so allow more than the default 5s
     await expect(this.page).toHaveURL(/pim\/viewPersonalDetails/, { timeout: 15000 });

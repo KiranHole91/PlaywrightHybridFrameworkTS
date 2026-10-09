@@ -1,0 +1,23 @@
+[
+    {
+        "id": "TC_PIM_001",
+        "title": "Add employee without login details",
+        "tags": ["@smoke", "@pim"],
+        "firstName": "Kiran",
+        "lastName": "Test"
+  },
+  {
+        "id": "TC_PIM_002",
+        "title": "Add employee with login details",
+        "tags": ["@regression", "@pim"],
+        "firstName": "Asha",
+        "middleName": "R",
+        "lastName": "Patil",
+        "login": 
+                { 
+                    "usernamePrefix": "asha", 
+                    "status": "Enabled" 
+                } 
+    }
+    
+]
