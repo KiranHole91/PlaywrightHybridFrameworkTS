@@ -1,5 +1,14 @@
 import { Page, Locator, expect } from '@playwright/test';
 
+export type AddEmployeeField =
+  | 'firstName'
+  | 'middleName'
+  | 'lastName'
+  | 'employeeId'
+  | 'username'
+  | 'password'
+  | 'confirmPassword';
+
 export class PIMPage {
   readonly page: Page;
   readonly linkEmployeeList: Locator;
@@ -116,6 +125,26 @@ export class PIMPage {
     await this.linkEmployeeList.click();
     await this.selectEmployeeFromAutoSuggest(searchText, optionToPick);
     await this.buttonSearch.click();
+  }
+
+  fieldInput(field: AddEmployeeField): Locator {
+    const inputs: Record<AddEmployeeField, Locator> = {
+      firstName: this.inputFirstName,
+      middleName: this.inputMiddleName,
+      lastName: this.inputLastName,
+      employeeId: this.inputEmployeeID,
+      username: this.inputUsername,
+      password: this.inputPassword,
+      confirmPassword: this.inputConfirmPassword,
+    };
+    return inputs[field];
+  }
+
+  // The error text sits in the same .oxd-input-group as the input
+  errorFor(field: AddEmployeeField): Locator {
+    return this.fieldInput(field)
+      .locator('xpath=ancestor::div[contains(@class,"oxd-input-group")][1]')
+      .locator('.oxd-input-field-error-message');
   }
 
   rowFor(text: string | RegExp): Locator {

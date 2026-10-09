@@ -1,0 +1,11 @@
+id,title,tags,field,value,repeat,expectedError
+TC_VAL_001,First Name is required,@regression|@validation,firstName,,,Required
+TC_VAL_002,Last Name is required,@regression|@validation,lastName,,,Required
+TC_VAL_003,First Name over 30 chars,@regression|@validation,firstName,a,31,Should not exceed 30 characters
+TC_VAL_004,Middle Name over 30 chars,@regression|@validation,middleName,a,31,Should not exceed 30 characters
+TC_VAL_005,Last Name over 30 chars,@regression|@validation,lastName,a,31,Should not exceed 30 characters
+TC_VAL_006,Employee Id over 10 chars,@regression|@validation,employeeId,1,11,Should not exceed 10 characters
+TC_VAL_007,Username is required,@regression|@validation,username,,,Required
+TC_VAL_008,Username too short,@regression|@validation,username,abc,,Should be at least 5 characters
+TC_VAL_009,Password too short,@regression|@validation,password,Ab1,,Should have at least 7 characters
+TC_VAL_010,Confirm Password mismatch,@regression|@validation,confirmPassword,Other@123,,Passwords do not match
