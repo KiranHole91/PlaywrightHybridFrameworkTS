@@ -19,3 +19,6 @@ Thumbs.db
 
 # Saved login session (storageState)
 auth-file/
+
+# Generated from the HR Excel sheet before each run
+/test-data/generated/

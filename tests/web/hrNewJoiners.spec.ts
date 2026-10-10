@@ -1,14 +1,20 @@
+import fs from 'fs';
 import { test, expect } from '../../fixtures/hooks-fixture';
 import { readJson } from '../../utils/TestDataJsonReader';
 import type { EmployeeData } from '../../test-data/types';
 
-const employees = readJson<EmployeeData[]>('test-data/employee.json');
+// Generated from HR's Excel sheet by `npm run data:new-joiners`
+const DATA_FILE = 'test-data/generated/new-joiners.json';
+if (!fs.existsSync(DATA_FILE)) {
+  throw new Error(`${DATA_FILE} not found. Run "npm run data:new-joiners" first.`);
+}
+const joiners = readJson<EmployeeData[]>(DATA_FILE);
 
 // Unique values so reruns don't clash with other employees on the shared demo site
 const uniqueID = () => Date.now().toString().slice(-6);
 
-for (const data of employees) {
-  // Tags come from JSON, which the lint rule can't check statically
+for (const data of joiners) {
+  // Tags come from Excel, which the lint rule can't check statically
   // eslint-disable-next-line playwright/valid-test-tags
   test(
     `${data.id} - ${data.title}`,
@@ -16,7 +22,7 @@ for (const data of employees) {
       tag: data.tags,
       annotation: {
         type: 'description',
-        description: data.login ? 'With login details' : 'Without login details',
+        description: data.login ? 'New joiner with login details' : 'New joiner without login details',
       },
     },
     async ({ gotoURL, pimPage, adminPage }) => {
@@ -30,7 +36,7 @@ for (const data of employees) {
         status: data.login.status,
       };
 
-      await test.step('Add employee', async () => {
+      await test.step('Add new joiner', async () => {
         await pimPage.gotoPIM();
         await pimPage.addEmployeeWithDetails(
           { firstName: data.firstName, middleName: data.middleName, lastName, employeeId: id },
@@ -38,7 +44,7 @@ for (const data of employees) {
         );
       });
 
-      await test.step('Verify employee appears in Employee List', async () => {
+      await test.step('Verify new joiner appears in Employee List', async () => {
         await pimPage.searchEmployee(lastName);
         const row = pimPage.rowFor(lastName);
         await expect(row).toHaveCount(1);
