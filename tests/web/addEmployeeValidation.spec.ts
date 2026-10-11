@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/hooks-fixture';
-import { readCsv } from '../../utils/TestDataCsvReader';
+import { readTestData } from '../../utils/TestDataReader';
 import type { AddEmployeeField } from '../../pages/PIMPage';
 
 type ValidationRow = {
@@ -25,7 +25,7 @@ const validValues: Record<AddEmployeeField, string> = {
   confirmPassword: 'Valid@1234',
 };
 
-const rows = readCsv<ValidationRow>('test-data/addEmployeeValidation.csv');
+const rows = readTestData<ValidationRow>('test-data/addEmployeeValidation.csv');
 
 for (const row of rows) {
   // Fail fast on a typo in the CSV instead of a confusing locator error

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { test, expect } from '../../fixtures/hooks-fixture';
-import { readJson } from '../../utils/TestDataJsonReader';
+import { readTestData } from '../../utils/TestDataReader';
 import type { EmployeeData } from '../../test-data/types';
 
 // Generated from HR's Excel sheet by `npm run data:new-joiners`
@@ -8,7 +8,7 @@ const DATA_FILE = 'test-data/generated/new-joiners.json';
 if (!fs.existsSync(DATA_FILE)) {
   throw new Error(`${DATA_FILE} not found. Run "npm run data:new-joiners" first.`);
 }
-const joiners = readJson<EmployeeData[]>(DATA_FILE);
+const joiners = readTestData<EmployeeData>(DATA_FILE);
 
 // Unique values so reruns don't clash with other employees on the shared demo site
 const uniqueID = () => Date.now().toString().slice(-6);
