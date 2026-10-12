@@ -7,4 +7,5 @@ export type EmployeeData = {
   middleName?: string;
   lastName: string;
   login?: { usernamePrefix: string; status: 'Enabled' | 'Disabled' };
+  jiraId?: string;
 };
