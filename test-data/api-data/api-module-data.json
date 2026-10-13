@@ -1,3 +1,18 @@
 {
-    "content-type" : "application/json; charset=utf-8"
+    "content-type" : "application/json; charset=utf-8",
+    "bookingId" : "1",
+    "firstname" : "Jim",
+    "create_Booking" : {
+                        "firstname" : "Kiran",
+                        "lastname" : "Brown",
+                        "totalprice" : 111,
+                        "depositpaid" : true,
+                        "bookingdates" : {
+                            "checkin" : "2018-01-01",
+                            "checkout" : "2019-01-01"
+                        },
+                        "additionalneeds" : "coffee"
+                    }
+
+                    
 }
