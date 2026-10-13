@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC_HR_001",
+    "title": "Joiner without login",
+    "tags": [
+      "@smoke",
+      "@hr"
+    ],
+    "firstName": "Ravi",
+    "lastName": "Kulkarni"
+  },
+  {
+    "id": "TC_HR_002",
+    "title": "Joiner with login",
+    "tags": [
+      "@regression",
+      "@hr"
+    ],
+    "firstName": "Neha",
+    "middleName": "S",
+    "lastName": "Joshi",
+    "login": {
+      "usernamePrefix": "neha",
+      "status": "Enabled"
+    }
+  }
+]

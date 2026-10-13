@@ -1,4 +1,4 @@
-import { createEmployee } from '../../test-data/employe.factory';
+import { createEmployee } from '../../test-data/ui-data/employe.factory';
 import { test, expect } from '../../fixtures/hooks-fixture';
 
 

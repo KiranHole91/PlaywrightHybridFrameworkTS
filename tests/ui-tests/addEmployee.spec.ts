@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/hooks-fixture';
 import { readTestData } from '../../utils/TestDataReader';
-import type { EmployeeData } from '../../test-data/types';
+import type { EmployeeData } from '../../test-data/ui-data/types';
 
 const employees = readTestData<EmployeeData>('test-data/employee.json');
 

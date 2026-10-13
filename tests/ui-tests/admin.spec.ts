@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/hooks-fixture';
-import { createEmployee } from '../../test-data/employe.factory';
+import { createEmployee } from '../../test-data/ui-data/employe.factory';
 import type { PIMPage } from '../../pages/PIMPage';
 import type { AdminPage } from '../../pages/AdminPage';
 

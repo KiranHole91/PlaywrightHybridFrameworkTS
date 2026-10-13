@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { test, expect } from '../../fixtures/hooks-fixture';
 import { readTestData } from '../../utils/TestDataReader';
-import type { EmployeeData } from '../../test-data/types';
+import type { EmployeeData } from '../../test-data/ui-data/types';
 
 // Generated from HR's Excel sheet by `npm run data:new-joiners`
 const DATA_FILE = 'test-data/generated/new-joiners.json';

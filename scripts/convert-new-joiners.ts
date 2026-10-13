@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { readTestData } from '../utils/TestDataReader';
-import type { EmployeeData } from '../test-data/types';
+import type { EmployeeData } from '../test-data/ui-data/types';
 
 // HR owns the Excel sheet; this turns it into JSON before Playwright starts.
 // It must run before `playwright test`, not in globalSetup, because spec files are collected first.
