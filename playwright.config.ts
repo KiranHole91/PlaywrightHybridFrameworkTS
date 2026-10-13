@@ -18,12 +18,17 @@ export default defineConfig({
   globalTimeout: 1*60*60*1000,
 
   use: {
+
+    baseURL : "https://restful-booker.herokuapp.com",
+    extraHTTPHeaders :{
+      accept : 'application/json'
+    },
     actionTimeout: 10000,
     navigationTimeout: 20000,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    baseURL: process.env.BASE_URL,
+    //baseURL: process.env.BASE_URL,
   },
 
   /* Configure projects for major browsers */
@@ -56,6 +61,11 @@ export default defineConfig({
         storageState: './auth-file/.auth/auth.json'
        },
     },
+
+    {
+      name : 'apiTest',
+      testDir : './tests/api-tests'
+    }
 
     /* Test against mobile viewports. */
     // {
