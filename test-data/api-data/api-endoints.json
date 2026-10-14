@@ -1,3 +1,4 @@
 {
-    "booking_endpoint" : "/booking"
+    "booking_endpoint" : "/booking",
+    "auth_endpoint" : "/auth"
 }

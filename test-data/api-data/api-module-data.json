@@ -12,7 +12,20 @@
                             "checkout" : "2019-01-01"
                         },
                         "additionalneeds" : "coffee"
+                    },
+    "update_Booking" : {
+                        "firstname" : "Kiran",
+                        "lastname" : "Green",
+                        "totalprice" : 250,
+                        "depositpaid" : false,
+                        "bookingdates" : {
+                            "checkin" : "2026-01-01",
+                            "checkout" : "2026-01-05"
+                        },
+                        "additionalneeds" : "Breakfast"
+                    },
+    "partial_Update_Booking" : {
+                        "firstname" : "Kiran_Patched",
+                        "totalprice" : 999
                     }
-
-                    
 }
