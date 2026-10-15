@@ -1,0 +1,15 @@
+{
+    "forbidden_Message": "Forbidden",
+    "invalid_Token": "invalidToken_abc123XYZ",
+    "sensitive_Info_Patterns": [
+        "at\\s+\\S+\\s+\\(",
+        "node_modules",
+        "\\.(js|ts):\\d+",
+        "Error:",
+        "Express",
+        "Mongo",
+        "SQL",
+        "/app/",
+        "[A-Z]:\\\\"
+    ]
+}

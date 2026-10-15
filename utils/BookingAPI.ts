@@ -21,6 +21,19 @@ public async createBooking(request : APIRequestContext, data = apidata.create_Bo
 }
 
     /**
+     * Fetches booking details for the given bookingId
+     * @param request
+     * @param bookingId
+     * @returns booking json
+     */
+public async getBooking(request : APIRequestContext, bookingId : number)
+{
+    const getBookingResp = await request.get(`${apiendpoints.booking_endpoint}/${bookingId}`);
+    expect(getBookingResp.status()).toBe(200);
+    return getBookingResp.json();
+}
+
+    /**
      * Deletes a booking, needs auth token sent as a Cookie header
      * @param request
      * @param bookingId
