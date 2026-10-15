@@ -1,5 +1,4 @@
 import {expect, test} from '../../fixtures/commonAPIFixture'
-import type { APIRequestContext } from '@playwright/test'
 import apiendpoints from '../../test-data/api-data/api-endoints.json'
 import apidata from '../../test-data/api-data/api-module-data.json'
 
@@ -65,16 +64,6 @@ test ("Verify that user is able to create new booking using POST API & receive v
 
 
 
-// Each test creates its own booking, so it doesn't depend on (or change) shared data
-async function createBooking(request: APIRequestContext): Promise<number> {
-    const createBookingResp = await request.post(apiendpoints.booking_endpoint, { data: apidata.create_Booking });
-    expect(createBookingResp.status()).toBe(200);
-
-    const createBookingRespJson = await createBookingResp.json();
-    expect(createBookingRespJson.bookingid).toBeTruthy();
-    return createBookingRespJson.bookingid;
-}
-
 test ("Verify that user is able to update booking using PUT API & receive valid response",
 {
     tag: ['@API', '@UAT'],
@@ -82,10 +71,9 @@ test ("Verify that user is able to update booking using PUT API & receive valid 
           type : "test Case ID",
           description : "API_TC_04"
     }
-}, async ({request, tokenFixture}) => {
+}, async ({request, tokenFixture, bookingId}) => {
 
     const tokenValue = await tokenFixture.getAuthToken(request);
-    const bookingId = await createBooking(request);
 
     const updateBookingResp = await request.put(`${apiendpoints.booking_endpoint}/${bookingId}`, {
         headers: { Cookie: `token=${tokenValue}` },
@@ -112,10 +100,9 @@ test ("Verify that user is able to partially update booking using PATCH API & re
           type : "test Case ID",
           description : "API_TC_05"
     }
-}, async ({request, tokenFixture}) => {
+}, async ({request, tokenFixture, bookingId}) => {
 
     const tokenValue = await tokenFixture.getAuthToken(request);
-    const bookingId = await createBooking(request);
 
     const partialUpdateResp = await request.patch(`${apiendpoints.booking_endpoint}/${bookingId}`, {
         headers: { Cookie: `token=${tokenValue}` },
@@ -144,10 +131,9 @@ test ("Verify that user is able to delete booking using DELETE API & receive val
           type : "test Case ID",
           description : "API_TC_06"
     }
-}, async ({request, tokenFixture}) => {
+}, async ({request, tokenFixture, bookingId}) => {
 
     const tokenValue = await tokenFixture.getAuthToken(request);
-    const bookingId = await createBooking(request);
 
     const deleteBookingResp = await request.delete(`${apiendpoints.booking_endpoint}/${bookingId}`, {
         headers: { Cookie: `token=${tokenValue}` }
