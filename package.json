@@ -10,7 +10,7 @@
     "test_SIT_ch_hl": "cross-env ENV_NAME=SIT npx playwright test --project=chromium",
     "test_SIT_ff_hl": "cross-env ENV_NAME=dev npx playwright test --project=firefox",
     "test:last-failed": "cross-env ENV_NAME=SIT npx playwright test --last-failed",
-    "test_api" : "cross-env ENV_NAME=SIT npx playwright test --project=apiTest",
+    "test_api": "cross-env ENV_NAME=SIT npx playwright test --project=apiTest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
@@ -45,6 +45,7 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "dependencies": {
+    "ajv": "^8.20.0",
     "cross-env": "^10.1.0",
     "crypto-js": "^4.2.0",
     "dotenv": "^18.0.5"

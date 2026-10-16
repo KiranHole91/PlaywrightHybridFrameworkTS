@@ -53,7 +53,8 @@ test ("Verify that user is able to create new booking using POST API & receive v
     }
 }, async ({request}) => {
 
-    const CreateBookingResp = await request.post(apiendpoints.booking_endpoint, { data : apidata.create_Booking })
+    const CreateBookingResp = await request.post(apiendpoints.booking_endpoint, 
+                                                { data : apidata.create_Booking })
     expect (CreateBookingResp.status()).toBe(200);
 
     const createBookingRespJson = await CreateBookingResp.json();

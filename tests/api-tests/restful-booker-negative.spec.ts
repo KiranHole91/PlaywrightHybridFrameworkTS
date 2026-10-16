@@ -1,75 +1,53 @@
 import {expect, test} from '../../fixtures/commonAPIFixture'
-import { APIResponse } from '@playwright/test'
 import apiendpoints from '../../test-data/api-data/api-endoints.json'
-import apidata from '../../test-data/api-data/api-module-data.json'
 import negativedata from '../../test-data/api-data/api-negative-data.json'
 
-/**
- * Common checks for a rejected (unauthorised) request:
- * 403 Forbidden, plain "Forbidden" body, no internal details leaked
- * @param resp
- * @returns response body as text, for any extra checks in the test
- */
-async function verifyForbiddenResponse(resp : APIResponse) : Promise<string>
-{
-    expect(resp.status()).toBe(403);
-    expect(resp.statusText()).toBe('Forbidden');
 
-    const respBody = await resp.text();
-    expect(respBody).toBe(negativedata.forbidden_Message);
-
-    for (const pattern of negativedata.sensitive_Info_Patterns) {
-        expect.soft(respBody, `body should not match ${pattern}`).not.toMatch(new RegExp(pattern, 'i'));
-    }
-    return respBody;
-}
-
-
-test ("Verify that user is unable to update booking using PUT API without a valid token & receive Forbidden response",
+test ("Verify that user receives 400 Bad Request when creating booking with missing fields",
 {
     tag: ['@API', '@UAT', '@Negative'],
-    annotation: {
-          type : "test Case ID",
-          description : "API_TC_07"
-    }
-}, async ({request, bookingAPI, bookingId}) => {
+    annotation: [
+        { type : "test Case ID", description : "API_TC_10" },
+        { type : "Known defect", description : "returns 500 Internal Server Error instead of 400 Bad Request" }
+    ]
+}, async ({request}) => {
 
-    // Snapshot the booking before the unauthorised call
-    const originalBooking = await bookingAPI.getBooking(request, bookingId);
+    test.fail();   // remove once the API returns 400
 
-    // No Cookie / Authorization header
-    const noTokenResp = await request.put(`${apiendpoints.booking_endpoint}/${bookingId}`, {
-        data: apidata.update_Booking
+    // Unique lastname, so the payload can't match an existing booking
+    const lastname = `${negativedata.missing_Fields_Booking.lastname}_${Date.now()}`;
+    const missingFieldsResp = await request.post(apiendpoints.booking_endpoint, {
+        data: { ...negativedata.missing_Fields_Booking, lastname }
     });
-    await verifyForbiddenResponse(noTokenResp);
-
-    // Verify the booking was not changed
-    expect(await bookingAPI.getBooking(request, bookingId)).toEqual(originalBooking);
+    expect(missingFieldsResp.status()).toBe(400);
 
 })
 
-test ("Verify that user is not able to update booking using PUT API with invalid token & receive Forbidden response",
+test ("Verify that missing fields booking request returns 500 without leaking internal details & creates no booking",
 {
     tag: ['@API', '@UAT', '@Negative'],
     annotation: {
           type : "test Case ID",
-          description : "API_TC_08"
+          description : "API_TC_10"
     }
-}, async ({request, bookingAPI, bookingId}) => {
+}, async ({request}) => {
 
-    const originalBooking = await bookingAPI.getBooking(request, bookingId);
-
-    const invalidTokenResp = await request.put(`${apiendpoints.booking_endpoint}/${bookingId}`, {
-        headers: { Cookie: `token=${negativedata.invalid_Token}` },
-        data: apidata.update_Booking
+    const lastname = `${negativedata.missing_Fields_Booking.lastname}_${Date.now()}`;
+    const missingFieldsResp = await request.post(apiendpoints.booking_endpoint, {
+        data: { ...negativedata.missing_Fields_Booking, lastname }
     });
-    const invalidTokenRespBody = await verifyForbiddenResponse(invalidTokenResp);
 
-    // Bad token must not be echoed back in body or headers
-    expect(invalidTokenRespBody).not.toContain(negativedata.invalid_Token);
-    expect(JSON.stringify(invalidTokenResp.headers())).not.toContain(negativedata.invalid_Token);
+    // Current behaviour; change to 400 once the defect is fixed
+    expect(missingFieldsResp.status()).toBe(500);
+    const respBody = await missingFieldsResp.text();
+    expect(respBody).toBe(negativedata.server_Error_Message);
+    for (const pattern of negativedata.sensitive_Info_Patterns) {
+        expect.soft(respBody, `body should not match ${pattern}`).not.toMatch(new RegExp(pattern, 'i'));
+    }
 
-    // Verify the booking was not changed
-    expect(await bookingAPI.getBooking(request, bookingId)).toEqual(originalBooking);
+    // Verify no booking was created
+    const searchResp = await request.get(apiendpoints.booking_endpoint, { params: { lastname } });
+    expect(searchResp.status()).toBe(200);
+    expect(await searchResp.json()).toEqual([]);
 
 })

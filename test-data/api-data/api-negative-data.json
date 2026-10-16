@@ -11,5 +11,17 @@
         "SQL",
         "/app/",
         "[A-Z]:\\\\"
+    ],
+    "missing_Fields_Booking": {
+        "lastname": "MissingFirstName",
+        "totalprice": 111,
+        "depositpaid": true,
+        "bookingdates": { "checkin": "2018-01-01", "checkout": "2019-01-01" }
+    },
+    "server_Error_Message": "Internal Server Error",
+    "unauthorised_Scenarios": [
+        { "id": "API_TC_11", "name": "without token",           "headers": {} },
+        { "id": "API_TC_12", "name": "with invalid token",      "headers": { "Cookie": "token=invalidToken_abc123XYZ" } },
+        { "id": "API_TC_13", "name": "with invalid Basic auth", "headers": { "Authorization": "Basic d3Jvbmc6d3Jvbmc=" } }
     ]
 }

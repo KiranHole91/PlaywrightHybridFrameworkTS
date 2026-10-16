@@ -5,7 +5,7 @@
     "create_Booking" : {
                         "firstname" : "Kiran",
                         "lastname" : "Brown",
-                        "totalprice" : 111,
+                        "totalprice" : 10000,
                         "depositpaid" : true,
                         "bookingdates" : {
                             "checkin" : "2018-01-01",
@@ -26,6 +26,6 @@
                     },
     "partial_Update_Booking" : {
                         "firstname" : "Kiran_Patched",
-                        "totalprice" : 999
+                        "totalprice" : 25000
                     }
 }
