@@ -2,9 +2,7 @@ import { test, expect } from '../../fixtures/hooks-fixture';
 import { createEmployee } from '../../test-data/ui-data/employe.factory';
 import type { PIMPage } from '../../pages/PIMPage';
 import type { AdminPage } from '../../pages/AdminPage';
-
-
-const uniqueID = () => Date.now().toString().slice(-6);
+import { uniqueID } from '../../utils/uniqueID';
 
 // An admin user must be linked to an employee, so create one first
 async function createAdminUser(pimPage: PIMPage, adminPage: AdminPage) {

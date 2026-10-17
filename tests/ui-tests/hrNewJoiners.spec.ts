@@ -2,16 +2,14 @@ import fs from 'fs';
 import { test, expect } from '../../fixtures/hooks-fixture';
 import { readTestData } from '../../utils/TestDataReader';
 import type { EmployeeData } from '../../test-data/ui-data/types';
+import { uniqueID } from '../../utils/uniqueID';
 
 // Generated from HR's Excel sheet by `npm run data:new-joiners`
-const DATA_FILE = 'test-data/generated/new-joiners.json';
+const DATA_FILE = 'test-data/ui-data/generated/new-joiners.json';
 if (!fs.existsSync(DATA_FILE)) {
   throw new Error(`${DATA_FILE} not found. Run "npm run data:new-joiners" first.`);
 }
 const joiners = readTestData<EmployeeData>(DATA_FILE);
-
-// Unique values so reruns don't clash with other employees on the shared demo site
-const uniqueID = () => Date.now().toString().slice(-6);
 
 // Feature-level Jira ID and tag apply to every test in this block
 test.describe(

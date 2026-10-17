@@ -1,9 +1,6 @@
 import { createEmployee } from '../../test-data/ui-data/employe.factory';
 import { test, expect } from '../../fixtures/hooks-fixture';
-
-
-// Unique values so reruns don't clash with other employees on the shared demo site
-const uniqueID = () => Date.now().toString().slice(-6);
+import { uniqueID } from '../../utils/uniqueID';
 
 test('Add and validate added Employee in Employee list using auto-suggest', async ({ pimPage, gotoURL }) => {
   const user = createEmployee();

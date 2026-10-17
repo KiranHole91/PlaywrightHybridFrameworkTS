@@ -1,11 +1,9 @@
 import { test, expect } from '../../fixtures/hooks-fixture';
 import { readTestData } from '../../utils/TestDataReader';
 import type { EmployeeData } from '../../test-data/ui-data/types';
+import { uniqueID } from '../../utils/uniqueID';
 
-const employees = readTestData<EmployeeData>('test-data/employee.json');
-
-// Unique values so reruns don't clash with other employees on the shared demo site
-const uniqueID = () => Date.now().toString().slice(-6);
+const employees = readTestData<EmployeeData>('test-data/ui-data/employee.json');
 
 for (const data of employees) {
   // Tags come from JSON, which the lint rule can't check statically

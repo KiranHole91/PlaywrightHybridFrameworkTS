@@ -10,6 +10,7 @@ node_modules/
 .prettierrc
 .env
 .env.*
+!env-files/.env.example
 .ds_store
 .log
 Thumbs.db
@@ -21,4 +22,4 @@ Thumbs.db
 auth-file/
 
 # Generated from the HR Excel sheet before each run
-/test-data/generated/
+/test-data/ui-data/generated/

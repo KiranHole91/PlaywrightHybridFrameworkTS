@@ -25,7 +25,7 @@ const validValues: Record<AddEmployeeField, string> = {
   confirmPassword: 'Valid@1234',
 };
 
-const rows = readTestData<ValidationRow>('test-data/addEmployeeValidation.csv');
+const rows = readTestData<ValidationRow>('test-data/ui-data/addEmployeeValidation.csv');
 
 for (const row of rows) {
   // Fail fast on a typo in the CSV instead of a confusing locator error

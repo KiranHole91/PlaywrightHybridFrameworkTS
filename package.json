@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "pretest": "npm run data:new-joiners",
+    "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test_SIT_ch_headed": "cross-env ENV_NAME=SIT npx playwright test --project=chromium --headed",
-    "test_dev_ff_heeded": "cross-env ENV_NAME=dev npx playwright test --project=firefox --headed",
+    "test_dev_ff_headed": "cross-env ENV_NAME=dev npx playwright test --project=firefox --headed",
     "test_SIT_ch_hl": "cross-env ENV_NAME=SIT npx playwright test --project=chromium",
-    "test_SIT_ff_hl": "cross-env ENV_NAME=dev npx playwright test --project=firefox",
+    "test_SIT_ff_hl": "cross-env ENV_NAME=SIT npx playwright test --project=firefox",
     "test:last-failed": "cross-env ENV_NAME=SIT npx playwright test --last-failed",
     "test_api": "cross-env ENV_NAME=SIT npx playwright test --project=apiTest",
     "lint": "eslint .",
@@ -19,7 +21,8 @@
     "allure:open": "allure open allure-report",
     "allure:serve": "allure serve allure-results",
     "data:new-joiners": "tsx scripts/convert-new-joiners.ts",
-    "test:new-joiners": "npm run data:new-joiners && cross-env ENV_NAME=SIT npx playwright test tests/web/hrNewJoiners.spec.ts --project=chromium"
+    "test:new-joiners": "npm run data:new-joiners && cross-env ENV_NAME=SIT npx playwright test tests/ui-tests/hrNewJoiners.spec.ts --project=chromium",
+    "encrypt": "tsx scripts/encrypt.ts"
   },
   "keywords": [],
   "author": "",

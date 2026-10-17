@@ -5,8 +5,8 @@ import type { EmployeeData } from '../test-data/ui-data/types';
 
 // HR owns the Excel sheet; this turns it into JSON before Playwright starts.
 // It must run before `playwright test`, not in globalSetup, because spec files are collected first.
-const SOURCE = 'test-data/excel/hr-new-joiners.xlsx';
-const OUTPUT = 'test-data/generated/new-joiners.json';
+const SOURCE = 'test-data/ui-data/excel/hr-new-joiners.xlsx';
+const OUTPUT = 'test-data/ui-data/generated/new-joiners.json';
 
 // SheetJS adds a hidden, 0-based __rowNum__ to each row, so errors can name the real Excel row
 type ExcelRow = Record<string, string> & { __rowNum__?: number };

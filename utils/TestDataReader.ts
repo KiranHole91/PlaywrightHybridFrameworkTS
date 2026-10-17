@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx';
  * Universal test data reader: picks the parser from the file extension.
  * Paths are relative to the project root, so every spec uses the same path.
  * CSV and Excel values are strings; JSON keeps its own types.
- * @param relativeFilePath e.g. 'test-data/employee.json'
+ * @param relativeFilePath e.g. 'test-data/ui-data/employee.json'
  * @param sheetName Excel only; defaults to the first sheet
  */
 export function readTestData<T = Record<string, string>>(relativeFilePath: string, sheetName?: string): T[] {

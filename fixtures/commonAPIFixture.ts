@@ -15,6 +15,8 @@ export const test = baseTest.extend<commonAPIfixture> ({
 
     },
 
+    // Playwright requires a destructured first argument, even when no fixtures are used
+    // eslint-disable-next-line no-empty-pattern
     bookingAPI : ({}, use) => {
         return use ( new BookingAPI());
     },

@@ -33,13 +33,16 @@ From a fresh clone to a green run in about ten minutes.
 
    SheetJS installs from its own CDN tarball, already pinned in `package.json` (see [Setup note](#setup-note)).
 
-3. **Create the environment files.** They are git-ignored, so ask a team member for the values or create them in `env-files/`:
+3. **Create the environment files.** They are git-ignored. Copy [`env-files/.env.example`](env-files/.env.example) to `env-files/.env.dev` (and `.env.SIT`, etc.), then ask a team member for the values or encrypt your own (step 4):
 
    ```ini
    # env-files/.env.dev  (and .env.SIT, etc.)
    BASE_URL=https://<orangehrm-host>
    USER_NAME=<AES-encrypted username>
    PASSWORD=<AES-encrypted password>
+   API_BASE_URL=https://<restful-booker-host>
+   API_USERNAME=<AES-encrypted username>
+   API_PASSWORD=<AES-encrypted password>
    ```
 
    [`playwright.config.ts`](playwright.config.ts) loads `env-files/.env.${ENV_NAME}` and falls back to `.env.dev`.
@@ -53,7 +56,7 @@ From a fresh clone to a green run in about ten minutes.
    export SECRET_KEY="<team secret>"
    ```
 
-   To encrypt a new value, call `new encryptionDecryption().encryptData('value')` from [`utils/encryptionDecryption.ts`](utils/encryptionDecryption.ts) with the same key set.
+   To encrypt a new value with the same key set, run `npm run encrypt -- "<value>"` ([`scripts/encrypt.ts`](scripts/encrypt.ts)) and paste the output into the env file.
 
 5. **Run your first test:**
 
@@ -79,7 +82,7 @@ Each folder has one job. Tests describe behaviour; everything else lives in a la
 
 ```
 PlaywrightAutomationFramework/
-├── tests/web/                     Spec files, one per feature
+├── tests/ui-tests/                Spec files, one per feature
 │   ├── global.setup.ts            Logs in once, saves storageState
 │   ├── login.spec.ts              Real login flow (clears storageState)
 │   ├── PIM.spec.ts · admin.spec.ts · sideMenu.spec.ts
@@ -94,17 +97,21 @@ PlaywrightAutomationFramework/
 │   ├── commonFixture.ts           + utilities (encryption)
 │   └── hooks-fixture.ts           + setup/teardown hooks (gotoURL, logout)
 ├── test-data/                     Static data, factories and shared types
-│   ├── employee.json · addEmployeeValidation.csv
-│   ├── excel/hr-new-joiners.xlsx  Business-owned source
-│   ├── employe.factory.ts         Faker-based dynamic data
-│   ├── types.ts                   EmployeeData type
-│   └── generated/                 Converter output (git-ignored)
+│   ├── api-data/                  API endpoints, payloads, schemas, mocks
+│   └── ui-data/
+│       ├── employee.json · addEmployeeValidation.csv
+│       ├── excel/hr-new-joiners.xlsx  Business-owned source
+│       ├── employe.factory.ts     Faker-based dynamic data
+│       ├── types.ts               EmployeeData type
+│       └── generated/             Converter output (git-ignored)
 ├── utils/
 │   ├── TestDataReader.ts          One reader for JSON / CSV / Excel
+│   ├── uniqueID.ts                Time-based ID shared by the UI specs
 │   └── encryptionDecryption.ts    AES encrypt / decrypt
 ├── scripts/
-│   └── convert-new-joiners.ts     Validates Excel, writes JSON
-├── env-files/                     .env.dev, .env.SIT (git-ignored)
+│   ├── convert-new-joiners.ts     Validates Excel, writes JSON
+│   └── encrypt.ts                 npm run encrypt -- "<value>"
+├── env-files/                     .env.dev, .env.SIT (git-ignored), .env.example
 ├── auth-file/                     Saved login session (git-ignored)
 ├── playwright.config.ts           Projects, reporters, timeouts, env loading
 ├── eslint.config.mjs · .prettierrc · tsconfig.json
@@ -170,13 +177,13 @@ flowchart LR
 | Page Object Model | One class per screen. Locators are `readonly` fields set in the constructor; methods are business actions with built-in waits and assertions. | [`pages/`](pages/) |
 | Custom fixtures | `test.extend()` chained in three layers: page objects → utilities → hooks. Specs import from the layer they need. | [`fixtures/`](fixtures/) |
 | Fixture hooks | `gotoURL` runs before the test and checks the dashboard loads, which catches a stale session. `logout` runs its code after `use()` as teardown. | [`hooks-fixture.ts`](fixtures/hooks-fixture.ts) |
-| Session reuse | A `setup` project logs in and saves `storageState`. Browser projects depend on it and load `auth.json`. `login.spec.ts` clears it to test the real login. | [`global.setup.ts`](tests/web/global.setup.ts), [`playwright.config.ts`](playwright.config.ts) |
+| Session reuse | A `setup` project logs in and saves `storageState`. Browser projects depend on it and load `auth.json`. `login.spec.ts` clears it to test the real login. | [`global.setup.ts`](tests/ui-tests/global.setup.ts), [`playwright.config.ts`](playwright.config.ts) |
 | Multi-environment | `cross-env ENV_NAME=…` plus `dotenv` loads the matching file; `baseURL` comes from `BASE_URL`. | [`playwright.config.ts`](playwright.config.ts) |
 | Credential security | Usernames and passwords are stored AES-encrypted; `SECRET_KEY` is passed at run time. Clear errors when the key is missing or wrong. | [`encryptionDecryption.ts`](utils/encryptionDecryption.ts) |
 | Data-driven testing | `readTestData<T>()` picks the parser from the extension and always returns an array of rows; a `for…of` loop creates one test per row. | [`TestDataReader.ts`](utils/TestDataReader.ts) |
 | Business-owned data | Excel sheet with business-friendly columns and dropdowns. A converter keeps `Run = Y` rows, validates them, maps them to `EmployeeData` and writes JSON before Playwright starts. | [`convert-new-joiners.ts`](scripts/convert-new-joiners.ts) |
-| Dynamic test data | Faker factory for names, usernames and passwords, plus a time-based `uniqueID()` so reruns don't clash on the shared demo site. | [`employe.factory.ts`](test-data/employe.factory.ts) |
-| Tags and traceability | Tags from the data files (`@smoke`, `@regression`, `@pim`); a feature-level tag and `Feature` / `Jira ID` annotations on `describe` and `test`. | [`hrNewJoiners.spec.ts`](tests/web/hrNewJoiners.spec.ts) |
+| Dynamic test data | Faker factory for names, usernames and passwords, plus a time-based `uniqueID()` so reruns don't clash on the shared demo site. | [`employe.factory.ts`](test-data/ui-data/employe.factory.ts), [`uniqueID.ts`](utils/uniqueID.ts) |
+| Tags and traceability | Tags from the data files (`@smoke`, `@regression`, `@pim`); a feature-level tag and `Feature` / `Jira ID` annotations on `describe` and `test`. | [`hrNewJoiners.spec.ts`](tests/ui-tests/hrNewJoiners.spec.ts) |
 | Readable steps | `test.step()` groups actions into named steps that show in the HTML and Allure reports. | data-driven specs |
 | Web-first assertions | `expect(locator).toHaveCount / toContainText / toHaveURL` with auto-retry and no fixed sleeps (lint warns on `waitForTimeout`). | pages and specs |
 | Reporting and debugging | HTML and Allure reporters. Trace on first retry; screenshot and video kept only on failure. | [`playwright.config.ts`](playwright.config.ts) |
@@ -228,7 +235,7 @@ const rows = readTestData<MyRowType>('test-data/<file>.<json|csv|xlsx|xls>', 'Op
 | Blank values | Whatever the JSON holds | `''` | `''`; a column is never missing from a row |
 | Blank rows | n/a | Skipped | Skipped |
 | Extras | A single object is wrapped into a one-row array | Values trimmed; Excel's BOM removed | Sheet chosen by name; defaults to the first sheet |
-| Example | [`employee.json`](test-data/employee.json) → [`addEmployee.spec.ts`](tests/web/addEmployee.spec.ts) | [`addEmployeeValidation.csv`](test-data/addEmployeeValidation.csv) → [`addEmployeeValidation.spec.ts`](tests/web/addEmployeeValidation.spec.ts) | [`hr-new-joiners.xlsx`](test-data/excel/hr-new-joiners.xlsx) → [`convert-new-joiners.ts`](scripts/convert-new-joiners.ts) |
+| Example | [`employee.json`](test-data/ui-data/employee.json) → [`addEmployee.spec.ts`](tests/ui-tests/addEmployee.spec.ts) | [`addEmployeeValidation.csv`](test-data/ui-data/addEmployeeValidation.csv) → [`addEmployeeValidation.spec.ts`](tests/ui-tests/addEmployeeValidation.spec.ts) | [`hr-new-joiners.xlsx`](test-data/ui-data/excel/hr-new-joiners.xlsx) → [`convert-new-joiners.ts`](scripts/convert-new-joiners.ts) |
 
 CSV and Excel both produce flat rows of strings. In the spec, convert numbers and booleans yourself, and split comma-separated lists such as tags. JSON keeps nested, typed data, so moving a dataset between JSON and CSV/Excel needs a mapping step.
 
@@ -243,7 +250,7 @@ CSV and Excel both produce flat rows of strings. In the spec, convert numbers an
 
 ### Business-owned Excel: HR new-joiner batch
 
-HR maintains [`test-data/excel/hr-new-joiners.xlsx`](test-data/excel/hr-new-joiners.xlsx), sheet `NewJoiners`, using business-friendly column names:
+HR maintains [`test-data/ui-data/excel/hr-new-joiners.xlsx`](test-data/ui-data/excel/hr-new-joiners.xlsx), sheet `NewJoiners`, using business-friendly column names:
 
 | Run | Test ID | Title | Tags | First Name | Middle Name | Last Name | Create Login | Username Prefix | Login Status |
 |---|---|---|---|---|---|---|---|---|---|
@@ -257,7 +264,7 @@ HR maintains [`test-data/excel/hr-new-joiners.xlsx`](test-data/excel/hr-new-join
 The flow:
 
 ```
-hr-new-joiners.xlsx ──npm run data:new-joiners──► test-data/generated/new-joiners.json ──► hrNewJoiners.spec.ts
+hr-new-joiners.xlsx ──npm run data:new-joiners──► test-data/ui-data/generated/new-joiners.json ──► hrNewJoiners.spec.ts
 ```
 
 [`scripts/convert-new-joiners.ts`](scripts/convert-new-joiners.ts) does the following:
@@ -274,7 +281,7 @@ hr-new-joiners.xlsx ──npm run data:new-joiners──► test-data/generated/
 If any row is invalid, the script stops before the browser opens and names each problem by its Excel row number:
 
 ```
-❌ test-data/excel/hr-new-joiners.xlsx has 1 problem(s):
+❌ test-data/ui-data/excel/hr-new-joiners.xlsx has 1 problem(s):
   Row 3: "Login Status" must be Enabled or Disabled, got "Active"
 ```
 
@@ -316,18 +323,19 @@ npm i -D https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 
 | Command | What it does |
 |---|---|
+| `npm test` | Convert the HR Excel sheet (via `pretest`), then run every project on the default env (dev) |
 | `npm run test_SIT_ch_hl` | SIT, Chromium, headless |
 | `npm run test_SIT_ch_headed` | SIT, Chromium, headed |
-| `npm run test_dev_ff_heeded` | dev, Firefox, headed |
+| `npm run test_dev_ff_headed` | dev, Firefox, headed |
 | `npm run test:new-joiners` | Convert the HR Excel sheet to JSON, then run the batch on SIT / Chromium |
 | `npm run data:new-joiners` | Convert and validate the Excel sheet only |
+| `npm run encrypt -- "<value>"` | AES-encrypt a value with `SECRET_KEY` for the env files |
 | `npx playwright test --grep @smoke` | Run by tag (also works for `@HRM-1000`) |
 | `npx playwright test --ui` | Interactive UI mode for writing and debugging |
 | `npm run allure:serve` | Build and open the Allure report from `allure-results` |
 | `npm run lint` · `npm run lint:fix` | ESLint check / auto-fix |
 | `npm run format` · `npm run format:check` | Prettier write / check |
 
-> **Known gap:** `test_SIT_ff_hl` currently sets `ENV_NAME=dev`, so it runs against dev despite its name. It is listed in the clean-up items below.
 
 ## Future plans
 
@@ -335,8 +343,7 @@ npm i -D https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 
 - **CI pipeline** (GitHub Actions or Azure DevOps): lint, run `@smoke` on every PR, run full regression nightly, and publish the HTML and Allure reports as build artifacts.
 - **Secrets in CI:** `SECRET_KEY` and environment values from the pipeline's secret store.
-- **Clean-up:** fix the `test_SIT_ff_hl` environment, use one naming style for scripts (e.g. `test:sit:chromium`), rename `employe.factory.ts` and `loginToOrgangeHRM`, and move the repeated `uniqueID()` into `utils/`.
-- **Encryption helper script:** `npm run encrypt -- "value"`, so onboarding needs no ad-hoc code.
+- **Clean-up:** use one naming style for scripts (e.g. `test:sit:chromium`), and rename `employe.factory.ts` and `loginToOrgangeHRM`.
 
 ### Soon
 
