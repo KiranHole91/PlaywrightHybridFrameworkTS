@@ -1,0 +1,31 @@
+{
+  "emptyEmployeeList": {
+    "data": [],
+    "meta": { "total": 0 },
+    "rels": []
+  },
+  "singleEmployeeList": {
+    "data": [
+      {
+        "empNumber": 99999,
+        "lastName": "Mockerson",
+        "firstName": "Mocky",
+        "middleName": "",
+        "employeeId": "MOCK001",
+        "terminationId": null,
+        "jobTitle": { "id": 1, "title": "QA Engineer", "isDeleted": false },
+        "subunit": { "id": 1, "name": "Quality Assurance" },
+        "empStatus": { "id": 1, "name": "Full-Time Permanent" },
+        "supervisors": []
+      }
+    ],
+    "meta": { "total": 1 },
+    "rels": []
+  },
+  "serverError": {
+    "error": { 
+            "status": "500", 
+            "message": "Internal Server Error" 
+          }
+  }
+}

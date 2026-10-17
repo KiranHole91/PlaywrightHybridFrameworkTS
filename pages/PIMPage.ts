@@ -31,6 +31,7 @@ export class PIMPage {
   readonly inputUsername: Locator;
   readonly inputPassword: Locator;
   readonly inputConfirmPassword: Locator;
+  readonly noRecordsText: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -58,6 +59,7 @@ export class PIMPage {
     this.inputUsername = page.locator('.oxd-input-group', { hasText: 'Username' }).locator('input');
     this.inputPassword = page.locator('input[type="password"]').nth(0);
     this.inputConfirmPassword = page.locator('input[type="password"]').nth(1);
+    this.noRecordsText = page.getByText('No Records Found').first();
   }
 
   async gotoPIM(){

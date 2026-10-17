@@ -18,7 +18,7 @@ export default defineConfig({
   globalTimeout: 1*60*60*1000,
 
   use: {
-
+    baseURL: process.env.BASE_URL,
     actionTimeout: 10000,
     navigationTimeout: 20000,
     trace: 'on-first-retry',
@@ -32,7 +32,6 @@ export default defineConfig({
     {
       name : 'setup',
       testMatch : 'global.setup.ts',
-      use: { baseURL: process.env.BASE_URL },
     },
     
     {
