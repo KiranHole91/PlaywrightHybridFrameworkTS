@@ -1,0 +1,43 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:          # lets you start a run by hand from the Actions tab
+    inputs:
+      project:
+        description: 'Playwright project'
+        default: 'chromium'
+        type: choice
+        options: [chromium, firefox, webkit, apiTest]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest   #windows-latest
+    timeout-minutes: 60
+
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*   #Long term support
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Generate test data
+        run: npm run data:new-joiners
+
+      - name: Run tests
+        run: npx playwright test --project=${{ inputs.project || 'chromium' }}
+
+      - name: Upload HTML report
+
