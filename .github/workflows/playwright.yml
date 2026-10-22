@@ -46,7 +46,7 @@ jobs:
         run: npm run data:new-joiners
 
       - name: Run tests
-        run: npx playwright test --project=${{ inputs.project || 'chromium' }}
+        run: npx playwright test --project=${{ inputs.project || 'chromium' }} --workers=3
 
       - name: Upload HTML report
         if: ${{ !cancelled() }}
