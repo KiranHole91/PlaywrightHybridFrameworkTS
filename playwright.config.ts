@@ -14,7 +14,8 @@ export default defineConfig({
   reporter: [
   ['html', { open: 'never' }],
   ['allure-playwright', { resultsDir: 'allure-results' }],
-], 
+  ['junit', { outputFile: 'test-results/junit/results.xml' }],
+],
   globalTimeout: 1*60*60*1000,
 
   use: {

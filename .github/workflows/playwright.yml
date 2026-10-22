@@ -63,3 +63,13 @@ jobs:
           name: allure-results
           path: allure-results/
           retention-days: 14
+
+      - name: Upload JUnit report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: test-results/junit/results.xml
+          retention-days: 14
+
+          
