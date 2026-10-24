@@ -1,6 +1,11 @@
 # Playwright Automation Framework
 
-A TypeScript UI automation framework for the OrangeHRM web app. It combines the Page Object Model, layered Playwright fixtures and data-driven tests fed from JSON, CSV and Excel, with encrypted credentials, per-environment config and Allure reporting.
+A TypeScript hybrid automation framework with two test suites:
+
+- **UI tests** for the OrangeHRM web app, using the Page Object Model and data-driven tests fed from JSON, CSV and Excel.
+- **API tests** for the Restful Booker API, using Playwright's `request` fixture.
+
+Both suites share layered fixtures, encrypted credentials, per-environment config, HTML/Allure/JUnit reports and a GitHub Actions pipeline.
 
 **Stack:** `@playwright/test` 1.63 · TypeScript (strict) · Allure + HTML reports · Faker · SheetJS · csv-parse · crypto-js (AES) · ESLint + Prettier
 
@@ -9,6 +14,7 @@ A TypeScript UI automation framework for the OrangeHRM web app. It combines the 
 - [Onboarding](#onboarding)
 - [Folder structure](#folder-structure)
 - [How a test runs](#how-a-test-runs)
+- [CI pipeline](#ci-pipeline)
 - [What makes it hybrid, scalable, reusable and maintainable](#what-makes-it-hybrid-scalable-reusable-and-maintainable)
 - [Concepts and how we implemented them](#concepts-and-how-we-implemented-them)
 - [Test Data](#test-data)
@@ -80,47 +86,85 @@ From a fresh clone to a green run in about ten minutes.
 
 Each folder has one job. Tests describe behaviour; everything else lives in a layer underneath them.
 
+### At a glance
+
+| Folder | What goes here | UI | API |
+|---|---|---|---|
+| `tests/` | Spec files: what to test | `ui-tests/` | `api-tests/` |
+| `pages/` | Page objects: locators and actions per screen | ✅ | |
+| `fixtures/` | Ready-made objects injected into tests | ✅ | ✅ |
+| `utils/` | Reusable helpers: API clients, data reader, encryption, mocks | ✅ | ✅ |
+| `test-data/` | Input data: JSON, CSV, Excel and Faker factories | `ui-data/` | `api-data/` |
+| `scripts/` | Tools run outside Playwright (data converter, encrypt) | ✅ | ✅ |
+| `env-files/` | Per-environment URLs and encrypted credentials (git-ignored) | ✅ | ✅ |
+| `.github/workflows/` | CI pipeline | ✅ | ✅ |
+
+### Full tree
+
 ```
 PlaywrightAutomationFramework/
-├── tests/ui-tests/                Spec files, one per feature
-│   ├── global.setup.ts            Logs in once, saves storageState
-│   ├── login.spec.ts              Real login flow (clears storageState)
-│   ├── PIM.spec.ts · admin.spec.ts · sideMenu.spec.ts
-│   ├── addEmployee.spec.ts        Data-driven from JSON
-│   ├── addEmployeeValidation.spec.ts   Data-driven from CSV
-│   └── hrNewJoiners.spec.ts       Data-driven from Excel → JSON
-├── pages/                         Page Objects: locators + actions per screen
+├── tests/
+│   ├── ui-tests/                      OrangeHRM UI specs, one per feature
+│   │   ├── global.setup.ts            Logs in once, saves storageState
+│   │   ├── login.spec.ts              Real login flow (clears storageState)
+│   │   ├── PIM.spec.ts · admin.spec.ts · sideMenu.spec.ts
+│   │   ├── PIMMock.spec.ts            UI with mocked API responses
+│   │   ├── addEmployee.spec.ts        Data-driven from JSON
+│   │   ├── addEmployeeValidation.spec.ts   Data-driven from CSV
+│   │   └── hrNewJoiners.spec.ts       Data-driven from Excel → JSON
+│   └── api-tests/                     Restful Booker API specs
+│       ├── restful-booker-auth.spec.ts      Token / auth checks
+│       ├── restful-booker-api.spec.ts       CRUD on bookings
+│       ├── restful-booker-E2E.spec.ts       Create → read → update → delete flow
+│       ├── restful-booker-negative.spec.ts  Invalid input and error codes
+│       └── schema.spec.ts                   Response schema validation
+├── pages/                             Page objects (UI only)
 │   ├── LoginPage · DashboardPage · SideMenuPage
 │   └── PIMPage · AdminPage
-├── fixtures/                      Layered dependency injection
-│   ├── POMfixture.ts              Page objects
-│   ├── commonFixture.ts           + utilities (encryption)
-│   └── hooks-fixture.ts           + setup/teardown hooks (gotoURL, logout)
-├── test-data/                     Static data, factories and shared types
-│   ├── api-data/                  API endpoints, payloads, schemas, mocks
+├── fixtures/                          Layered dependency injection
+│   ├── POMfixture.ts                  UI: page objects
+│   ├── commonFixture.ts               UI: + utilities (encdec, apiMock)
+│   ├── hooks-fixture.ts               UI: + setup/teardown hooks (gotoURL, logout)
+│   └── commonAPIFixture.ts            API: tokenFixture, bookingAPI, bookingId (auto-cleanup)
+├── utils/
+│   ├── CommonAPIUtils.ts              API: gets the auth token
+│   ├── BookingAPI.ts                  API: create / get / delete booking
+│   ├── APIMockUtils.ts                UI: mock, fail or abort network calls
+│   ├── TestDataReader.ts              One reader for JSON / CSV / Excel
+│   ├── uniqueID.ts                    Time-based ID shared by the UI specs
+│   └── encryptionDecryption.ts        AES encrypt / decrypt
+├── test-data/
+│   ├── api-data/                      Endpoints, payloads, negative cases, schema, mock data
 │   └── ui-data/
 │       ├── employee.json · addEmployeeValidation.csv
 │       ├── excel/hr-new-joiners.xlsx  Business-owned source
-│       ├── employe.factory.ts     Faker-based dynamic data
-│       ├── types.ts               EmployeeData type
-│       └── generated/             Converter output (git-ignored)
-├── utils/
-│   ├── TestDataReader.ts          One reader for JSON / CSV / Excel
-│   ├── uniqueID.ts                Time-based ID shared by the UI specs
-│   └── encryptionDecryption.ts    AES encrypt / decrypt
+│       ├── employe.factory.ts         Faker-based dynamic data
+│       ├── types.ts                   EmployeeData type
+│       └── generated/                 Converter output (git-ignored)
 ├── scripts/
-│   ├── convert-new-joiners.ts     Validates Excel, writes JSON
-│   └── encrypt.ts                 npm run encrypt -- "<value>"
-├── env-files/                     .env.dev, .env.SIT (git-ignored), .env.example
-├── auth-file/                     Saved login session (git-ignored)
-├── playwright.config.ts           Projects, reporters, timeouts, env loading
+│   ├── convert-new-joiners.ts         Validates Excel, writes JSON
+│   └── encrypt.ts                     npm run encrypt -- "<value>"
+├── env-files/                         .env.dev, .env.SIT (git-ignored), .env.example
+├── auth-file/                         Saved login session (git-ignored)
+├── .github/workflows/playwright.yml   CI: ui-tests and api-tests jobs
+├── playwright.config.ts               Projects, reporters, timeouts, env loading
 ├── eslint.config.mjs · .prettierrc · tsconfig.json
-└── package.json                   npm scripts per env and browser
+└── package.json                       npm scripts per env and browser
 ```
+
+### Playwright projects
+
+| Project | Runs | Depends on |
+|---|---|---|
+| `setup` | `global.setup.ts`: logs in and saves the session | none |
+| `chromium` · `firefox` · `webkit` | UI specs, already logged in | `setup` |
+| `apiTest` | Everything in `tests/api-tests/`, with `baseURL = API_BASE_URL` | none |
 
 ## How a test runs
 
 The config picks the environment, the setup project logs in once, and each spec asks for only the fixtures it needs.
+
+### UI test
 
 ```mermaid
 flowchart LR
@@ -135,6 +179,41 @@ flowchart LR
   F --> J["TestDataReader<br/>JSON · CSV · Excel"]
   E --> K["HTML + Allure reports<br/>trace · screenshot · video on failure"]
 ```
+
+### API test
+
+```mermaid
+flowchart LR
+  A["ENV_NAME=SIT"] --> B["playwright.config.ts<br/>loads env-files/.env.SIT"]
+  B --> C["apiTest project<br/>baseURL = API_BASE_URL"]
+  C --> D["spec file"]
+  D --> E["commonAPIFixture"]
+  E --> F["tokenFixture<br/>decrypts API_USERNAME / API_PASSWORD<br/>with SECRET_KEY, gets token"]
+  E --> G["bookingId<br/>creates a booking, deletes it after the test"]
+  D --> H["test-data/api-data<br/>endpoints · payloads · schema"]
+  C --> I["HTML + Allure + JUnit reports"]
+```
+
+## CI pipeline
+
+[`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) runs on every push and pull request to `main`. You can also start it by hand from the **Actions** tab and pick a browser.
+
+| Job | What it does |
+|---|---|
+| `ui-tests` | Installs the browser, converts the HR Excel sheet, runs the UI project (`chromium` by default) |
+| `api-tests` | Runs the `apiTest` project (no browser needed) |
+
+The two jobs run in parallel. Each one uploads its HTML report, test results (JUnit, traces, videos) and Allure results as build artifacts.
+
+**Secrets:** the `.env` files are git-ignored, so CI reads the same values from GitHub Secrets instead. Add them under **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Used by |
+|---|---|
+| `SECRET_KEY` | both jobs |
+| `BASE_URL` · `USER_NAME` · `PASSWORD` | `ui-tests` |
+| `API_BASE_URL` · `API_USERNAME` · `API_PASSWORD` | `api-tests` |
+
+Use the same encrypted values as in `.env.SIT`, and store the key on its own without quotes or spaces.
 
 ## What makes it hybrid, scalable, reusable and maintainable
 
@@ -327,6 +406,7 @@ npm i -D https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 | `npm run test_SIT_ch_hl` | SIT, Chromium, headless |
 | `npm run test_SIT_ch_headed` | SIT, Chromium, headed |
 | `npm run test_dev_ff_headed` | dev, Firefox, headed |
+| `npm run test_api` | SIT, API tests only |
 | `npm run test:new-joiners` | Convert the HR Excel sheet to JSON, then run the batch on SIT / Chromium |
 | `npm run data:new-joiners` | Convert and validate the Excel sheet only |
 | `npm run encrypt -- "<value>"` | AES-encrypt a value with `SECRET_KEY` for the env files |
@@ -341,13 +421,11 @@ npm i -D https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 
 ### Next
 
-- **CI pipeline** (GitHub Actions or Azure DevOps): lint, run `@smoke` on every PR, run full regression nightly, and publish the HTML and Allure reports as build artifacts.
-- **Secrets in CI:** `SECRET_KEY` and environment values from the pipeline's secret store.
+- **CI improvements:** add a lint step, run `@smoke` on every PR and full regression nightly, and publish the Allure report to GitHub Pages.
 - **Clean-up:** use one naming style for scripts (e.g. `test:sit:chromium`), and rename `employe.factory.ts` and `loginToOrgangeHRM`.
 
 ### Soon
 
-- **API testing layer** in `tests/api/` using Playwright's `request` fixture, with API clients organised like the page objects.
 - **API-backed setup and cleanup:** create and delete employees through the API, so UI tests check only the UI and leave no data behind.
 - **`BasePage`** for shared helpers (toast check, table row lookup, confirm delete) that `PIMPage` and `AdminPage` both repeat today.
 - **Parallel runs:** turn on `fullyParallel` once tests are fully isolated, and shard in CI.
