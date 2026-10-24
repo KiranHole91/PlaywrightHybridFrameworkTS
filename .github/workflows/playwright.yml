@@ -8,21 +8,82 @@ on:
   workflow_dispatch:          # lets you start a run by hand from the Actions tab
     inputs:
       project:
-        description: 'Playwright project'
+        description: 'UI browser project'
         default: 'chromium'
         type: choice
-        options: [chromium, firefox, webkit, apiTest]
+        options: [chromium, firefox, webkit]
+
+permissions:
+  contents: read
+
+# cancel an older run on the same branch when a new one starts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  ENV_NAME: SIT
 
 jobs:
-  test:
+  ui-tests:
     runs-on: ubuntu-latest   #windows-latest
     timeout-minutes: 60
     env:
-      CI: true
-      ENV_NAME: SIT
+      PROJECT: ${{ inputs.project || 'chromium' }}
       BASE_URL: ${{ secrets.BASE_URL }}
       USER_NAME: ${{ secrets.USER_NAME }}
       PASSWORD: ${{ secrets.PASSWORD }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*   #Long term support
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps "$PROJECT"
+
+      - name: Generate test data
+        run: npm run data:new-joiners
+
+      - name: Run UI tests
+        run: npx playwright test --project="$PROJECT"
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (traces, videos, JUnit)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: test-results/
+          retention-days: 14
+
+      - name: Upload Allure results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-allure-results
+          path: allure-results/
+          retention-days: 14
+
+  api-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
       API_USERNAME: ${{ secrets.API_USERNAME }}
       API_PASSWORD: ${{ secrets.API_PASSWORD }}
@@ -39,37 +100,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Generate test data
-        run: npm run data:new-joiners
-
-      - name: Run tests
-        run: npx playwright test --project=${{ inputs.project || 'chromium' }} --workers=3
+      - name: Run API tests
+        run: npx playwright test --project=apiTest
 
       - name: Upload HTML report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: api-playwright-report
           path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (JUnit)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: test-results/
           retention-days: 14
 
       - name: Upload Allure results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
+          name: api-allure-results
           path: allure-results/
           retention-days: 14
-
-      - name: Upload JUnit report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-report
-          path: test-results/junit/results.xml
-          retention-days: 14
-
-          
