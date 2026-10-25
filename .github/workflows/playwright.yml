@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 18 * * *'      # nightly at 11:30 PM IST (cron is in UTC)
   workflow_dispatch:          # lets you start a run by hand from the Actions tab
     inputs:
       project:
@@ -12,22 +14,27 @@ on:
         default: 'chromium'
         type: choice
         options: [chromium, firefox, webkit]
+      grep:
+        description: 'Tag or text to run, e.g. @smoke (empty = everything)'
 
 permissions:
   contents: read
 
 # cancel an older run on the same branch when a new one starts
+# (event name keeps a push from cancelling the nightly run, and vice versa)
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 env:
   CI: true
   ENV_NAME: SIT
+  # push / PR → smoke only · nightly → everything · manual → grep input (empty = everything)
+  GREP: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && '@smoke' || inputs.grep }}
 
 jobs:
   ui-tests:
-    runs-on: ubuntu-latest   #windows-latest
+    runs-on: ubuntu-latest   #windows-latest  #macos-latest
     timeout-minutes: 60
     env:
       PROJECT: ${{ inputs.project || 'chromium' }}
@@ -54,7 +61,7 @@ jobs:
         run: npm run data:new-joiners
 
       - name: Run UI tests
-        run: npx playwright test --project="$PROJECT"
+        run: npx playwright test --project="$PROJECT" ${GREP:+--grep "$GREP"}
 
       - name: Upload HTML report
         if: ${{ !cancelled() }}
@@ -101,7 +108,7 @@ jobs:
         run: npm ci
 
       - name: Run API tests
-        run: npx playwright test --project=apiTest
+        run: npx playwright test --project=apiTest ${GREP:+--grep "$GREP"}
 
       - name: Upload HTML report
         if: ${{ !cancelled() }}
