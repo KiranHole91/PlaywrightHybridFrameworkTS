@@ -32,9 +32,14 @@ env:
   # push / PR → smoke only · nightly → everything · manual → grep input (empty = everything)
   GREP: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && '@smoke' || inputs.grep }}
 
+#use bash on every OS (Windows defaults to PowerShell, which can't read $PROJECT or ${GREP:+...} so use bash)
+defaults:
+  run:
+    shell: bash
+
 jobs:
   ui-tests:
-    runs-on: windows-latest   #ubantu-latest  #macos-latest
+    runs-on: windows-latest   #ubantu-latest   #macos-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false          # let every shard finish, even if one fails
@@ -100,8 +105,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2, 3, 4, 5, 6]
-        shardTotal: [6]
+        shardIndex: [1, 2, 3, 4, 5]
+        shardTotal: [5]
     env:
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
       API_USERNAME: ${{ secrets.API_USERNAME }}
