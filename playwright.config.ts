@@ -37,6 +37,7 @@ export default defineConfig({
     
     {
       name: 'chromium',
+      testDir: './tests/ui-tests',
       dependencies : ['setup'],
       use: { ...devices['Desktop Chrome'],
         storageState : './auth-file/.auth/auth.json'
@@ -45,6 +46,7 @@ export default defineConfig({
 
     {
       name: 'firefox',
+      testDir: './tests/ui-tests',
       dependencies: ['setup'],
       use: { ...devices['Desktop Firefox'],
         storageState: './auth-file/.auth/auth.json'
@@ -53,6 +55,7 @@ export default defineConfig({
 
     {
       name: 'webkit',
+      testDir: './tests/ui-tests',
       dependencies : ['setup'],
       use: { ...devices['Desktop Safari'],
         storageState: './auth-file/.auth/auth.json'
