@@ -11,11 +11,17 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 3 : undefined,
  //Array of tuples
-  reporter: [
-  ['html', { open: 'never' }],
-  ['allure-playwright', { resultsDir: 'allure-results' }],
-  ['junit', { outputFile: 'test-results/junit/results.xml' }],
-],
+ // CI shards write a blob report; the merge-reports job turns all shards into one HTML + JUnit report
+  reporter: process.env.CI
+    ? [
+        ['blob'],
+        ['allure-playwright', { resultsDir: 'allure-results' }],
+      ]
+    : [
+        ['html', { open: 'never' }],
+        ['allure-playwright', { resultsDir: 'allure-results' }],
+        ['junit', { outputFile: 'test-results/junit/results.xml' }],
+      ],
   globalTimeout: 1*60*60*1000,
 
   use: {

@@ -196,14 +196,58 @@ flowchart LR
 
 ## CI pipeline
 
-[`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) runs on every push and pull request to `main`. You can also start it by hand from the **Actions** tab and pick a browser.
+[`.github/workflows/playwright.yml`](.github/workflows/playwright.yml) runs the suites on GitHub Actions.
+
+### When it runs and what it runs
+
+| Trigger | Tests run |
+|---|---|
+| Push or pull request to `main` | `@smoke` only |
+| Nightly at 11:30 PM IST (`schedule`) | Everything |
+| Manual, from the **Actions** tab (`workflow_dispatch`) | Pick a browser (`chromium` / `firefox` / `webkit`) and an optional tag or text to grep; empty runs everything |
+
+A new run on the same branch cancels the older one (`concurrency`).
+
+### Jobs
+
+```mermaid
+flowchart LR
+  A["ui-tests<br/>3 shards"] --> C["merge-reports"]
+  B["api-tests<br/>5 shards"] --> C
+  C --> D["publish-allure<br/>main only"]
+  D --> E["GitHub Pages"]
+```
 
 | Job | What it does |
 |---|---|
-| `ui-tests` | Installs the browser, converts the HR Excel sheet, runs the UI project (`chromium` by default) |
-| `api-tests` | Runs the `apiTest` project (no browser needed) |
+| `ui-tests` | Lint and type check, install the browser, convert the HR Excel sheet, run the UI project on 3 shards (`chromium` by default) |
+| `api-tests` | Run the `apiTest` project on 5 shards (no browser needed) |
+| `merge-reports` | Combine all shards into one HTML + JUnit report per suite and one Allure results folder. Runs even when tests fail |
+| `publish-allure` | Build the Allure report, keep the trend history from the previous run, and deploy it to GitHub Pages. Runs only on `main`, never for a PR |
 
-The two jobs run in parallel. Each one uploads its HTML report, test results (JUnit, traces, videos) and Allure results as build artifacts.
+### Sharding and merged reports
+
+- Each job uses `strategy.matrix` with `--shard=<index>/<total>`, so the shards run on separate machines at the same time. `fail-fast: false` lets every shard finish even if one fails.
+- In CI, [`playwright.config.ts`](playwright.config.ts) switches to the `blob` reporter. A blob holds a shard's results with its traces, screenshots and videos. Locally you still get the HTML, Allure and JUnit reports.
+- `merge-reports` runs `npx playwright merge-reports --reporter html,junit` on the blobs. UI and API are merged separately because both suites name their blob files `report-<shard>.zip`.
+- Merging needs the same Playwright version as the shards, which `npm ci` guarantees.
+
+### Artifacts on each run
+
+| Artifact | Contents | Kept |
+|---|---|---|
+| `ui-playwright-report` · `api-playwright-report` | One merged HTML report and JUnit XML per suite | 14 days |
+| `allure-results` | Allure results from every shard of both suites | 14 days |
+| `ui-test-results-shard-N` | Raw traces and videos per UI shard | 14 days |
+| `*-blob-report-shard-N` | Shard blobs, input to the merge | 1 day |
+
+### Allure report on GitHub Pages
+
+The latest Allure report from `main` is published at `https://<owner>.github.io/PlaywrightAutomationFramework/` (owner in lowercase). The link is also shown on the run summary.
+
+- **One-time setup:** **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+- Each deploy replaces the previous report. Earlier runs live on in the trend charts, because `publish-allure` copies `history/*.json` from the live site before it builds.
+- On a free plan, Pages needs a public repo, so the report is public. It can contain screenshots and videos of failed tests. Credentials stay encrypted and never appear in it.
 
 **Secrets:** the `.env` files are git-ignored, so CI reads the same values from GitHub Secrets instead. Add them under **Settings → Secrets and variables → Actions → New repository secret**:
 
@@ -231,7 +275,8 @@ Use the same encrypted values as in `.env.SIT`, and store the key on its own wit
 - New environments are a new `.env.<NAME>` file, with no code change.
 - New browsers are a new `projects` entry; mobile and branded channels are already stubbed in the config.
 - Login runs once per run via `storageState`, so suite time grows with tests, not with logins.
-- The config is CI-aware: retries and workers switch on `process.env.CI`.
+- The config is CI-aware: retries, workers and reporters switch on `process.env.CI`.
+- CI shards the suites across machines (3 UI, 5 API) and merges them back into one report.
 
 ### Reusable: write once, use everywhere
 
@@ -265,7 +310,8 @@ Use the same encrypted values as in `.env.SIT`, and store the key on its own wit
 | Tags and traceability | Tags from the data files (`@smoke`, `@regression`, `@pim`); a feature-level tag and `Feature` / `Jira ID` annotations on `describe` and `test`. | [`hrNewJoiners.spec.ts`](tests/ui-tests/hrNewJoiners.spec.ts) |
 | Readable steps | `test.step()` groups actions into named steps that show in the HTML and Allure reports. | data-driven specs |
 | Web-first assertions | `expect(locator).toHaveCount / toContainText / toHaveURL` with auto-retry and no fixed sleeps (lint warns on `waitForTimeout`). | pages and specs |
-| Reporting and debugging | HTML and Allure reporters. Trace on first retry; screenshot and video kept only on failure. | [`playwright.config.ts`](playwright.config.ts) |
+| Reporting and debugging | HTML, Allure and JUnit reporters locally; `blob` per shard in CI, merged with `merge-reports`. Trace on first retry; screenshot and video kept only on failure. Allure published to GitHub Pages. | [`playwright.config.ts`](playwright.config.ts), [`playwright.yml`](.github/workflows/playwright.yml) |
+| CI/CD | GitHub Actions with push, PR, nightly and manual triggers; tag-based selection; lint and type check gate; matrix sharding; merged reports. | [`playwright.yml`](.github/workflows/playwright.yml) |
 | Code quality | Strict TS, `typescript-eslint` with type information, `eslint-plugin-playwright`, and Prettier last to avoid rule conflicts. | [`eslint.config.mjs`](eslint.config.mjs) |
 
 ### Fixture layering in practice
@@ -421,14 +467,14 @@ npm i -D https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 
 ### Next
 
-- **CI improvements:** add a lint step, run `@smoke` on every PR and full regression nightly, and publish the Allure report to GitHub Pages.
+- **CI improvements:** move lint and type check into their own job that the test jobs wait on, so lint runs once instead of once per shard; add `npm run format:check` (commit `.prettierrc` first, it is git-ignored today).
 - **Clean-up:** use one naming style for scripts (e.g. `test:sit:chromium`), and rename `employe.factory.ts` and `loginToOrgangeHRM`.
 
 ### Soon
 
 - **API-backed setup and cleanup:** create and delete employees through the API, so UI tests check only the UI and leave no data behind.
 - **`BasePage`** for shared helpers (toast check, table row lookup, confirm delete) that `PIMPage` and `AdminPage` both repeat today.
-- **Parallel runs:** turn on `fullyParallel` once tests are fully isolated, and shard in CI.
+- **Parallel runs:** turn on `fullyParallel` once tests are fully isolated, so shards split by test instead of by spec file.
 
 ### Later
 
