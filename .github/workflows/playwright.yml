@@ -81,15 +81,16 @@ jobs:
           npx playwright test --project="$PROJECT" ${GREP:+--grep "$GREP"}
           --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --pass-with-no-tests
 
-      - name: Upload HTML report
+      # blob report holds results + attachments; merged into one report in merge-reports
+      - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ui-playwright-report-shard-${{ matrix.shardIndex }}
-          path: playwright-report/
-          retention-days: 14
+          name: ui-blob-report-shard-${{ matrix.shardIndex }}
+          path: blob-report/
+          retention-days: 1
 
-      - name: Upload test results (traces, videos, JUnit)
+      - name: Upload test results (traces, videos)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
@@ -135,21 +136,13 @@ jobs:
           npx playwright test --project=apiTest ${GREP:+--grep "$GREP"}
           --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --pass-with-no-tests
 
-      - name: Upload HTML report
+      - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: api-playwright-report-shard-${{ matrix.shardIndex }}
-          path: playwright-report/
-          retention-days: 14
-
-      - name: Upload test results (JUnit)
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-test-results-shard-${{ matrix.shardIndex }}
-          path: test-results/
-          retention-days: 14
+          name: api-blob-report-shard-${{ matrix.shardIndex }}
+          path: blob-report/
+          retention-days: 1
 
       - name: Upload Allure results
         if: ${{ !cancelled() }}
@@ -158,3 +151,148 @@ jobs:
           name: api-allure-results-shard-${{ matrix.shardIndex }}
           path: allure-results/
           retention-days: 14
+
+  # Combines every shard into one HTML + JUnit report per suite, and one Allure results folder
+  merge-reports:
+    if: ${{ !cancelled() }}     # run even when tests fail, that's when the report matters most
+    needs: [ui-tests, api-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*   #Long term support
+          cache: npm
+
+      # same Playwright version as the shards, which merge-reports needs
+      - name: Install dependencies
+        run: npm ci
+
+      # UI and API blobs go to separate folders: both suites name their files report-<shard>.zip
+      - name: Download UI blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ui-blob-report-shard-*
+          path: ui-blob-reports
+          merge-multiple: true
+
+      - name: Download API blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: api-blob-report-shard-*
+          path: api-blob-reports
+          merge-multiple: true
+
+      - name: Merge UI report
+        if: ${{ hashFiles('ui-blob-reports/**') != '' }}
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: ui-playwright-report
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: ui-junit/results.xml
+        run: npx playwright merge-reports --reporter html,junit ./ui-blob-reports
+
+      - name: Merge API report
+        if: ${{ hashFiles('api-blob-reports/**') != '' }}
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: api-playwright-report
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: api-junit/results.xml
+        run: npx playwright merge-reports --reporter html,junit ./api-blob-reports
+
+      - name: Upload merged UI report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-playwright-report
+          path: |
+            ui-playwright-report/
+            ui-junit/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload merged API report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-playwright-report
+          path: |
+            api-playwright-report/
+            api-junit/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      # Allure files have unique names, so all shards of both suites can share one folder
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-allure-results-shard-*'
+          path: allure-results
+          merge-multiple: true
+
+      - name: Upload merged Allure results
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # Builds the Allure report and publishes it to GitHub Pages (main branch only, never from a PR)
+  publish-allure:
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    needs: merge-reports
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write              # deploy to Pages
+      id-token: write           # verify the deployment came from this workflow
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages              # one deployment at a time, never cancel one halfway
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*   #Long term support
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: actions/setup-java@v4  # Allure CLI runs on Java
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Download merged Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+
+      # Copy history from the live report so the trend charts span runs (first run: nothing to copy)
+      - name: Restore Allure history
+        run: |
+          mkdir -p allure-results/history
+          PAGES_URL="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${{ github.event.repository.name }}"
+          for f in history.json history-trend.json duration-trend.json categories-trend.json retry-trend.json; do
+            curl -fsSL "$PAGES_URL/history/$f" -o "allure-results/history/$f" || rm -f "allure-results/history/$f"
+          done
+
+      - name: Generate Allure report
+        run: npm run allure:generate
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
