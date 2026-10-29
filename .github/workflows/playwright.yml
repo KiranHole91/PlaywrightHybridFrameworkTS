@@ -74,7 +74,7 @@ jobs:
       - name: Run UI tests
         run: >-
           npx playwright test --project="$PROJECT" ${GREP:+--grep "$GREP"}
-          --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --pass-with-no-tests
+          --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       # blob report holds results + attachments; merged into one report in merge-reports
       - name: Upload blob report
@@ -129,7 +129,7 @@ jobs:
       - name: Run API tests
         run: >-
           npx playwright test --project=apiTest ${GREP:+--grep "$GREP"}
-          --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --pass-with-no-tests
+          --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report
         if: ${{ !cancelled() }}

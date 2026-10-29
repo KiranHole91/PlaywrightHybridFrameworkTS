@@ -1,5 +1,5 @@
 import { test, expect } from "../../fixtures/commonAPIFixture";
-import apiendpoint from '../../test-data/api-data/api-endoints.json'
+import apiendpoint from '../../test-data/api-data/api-endpoints.json'
 import apiData from '../../test-data/api-data/api-module-data.json'
 
 test("Verify that user is able to create, partially update & delete a booking using API chaining",
