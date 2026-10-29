@@ -25,7 +25,7 @@ test ("Verify that user receives 400 Bad Request when creating booking with miss
 
 test ("Verify that missing fields booking request returns 500 without leaking internal details & creates no booking",
 {
-    tag: ['@API', '@UAT', '@Negative'],
+    tag: ['@API', '@UAT', '@Negative', '@SMOKE'],
     annotation: {
           type : "test Case ID",
           description : "API_TC_10"

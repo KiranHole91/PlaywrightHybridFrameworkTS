@@ -27,7 +27,7 @@ async function verifyForbiddenResponse(resp : APIResponse) : Promise<string>
 
 test ("Verify that user is unable to update booking using PUT API without a valid token & receive Forbidden response",
 {
-    tag: ['@API', '@UAT', '@Negative'],
+    tag: ['@API', '@UAT', '@Negative', '@SMOKE'],
     annotation: {
           type : "test Case ID",
           description : "API_TC_07"
