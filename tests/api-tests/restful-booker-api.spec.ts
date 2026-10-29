@@ -5,7 +5,7 @@ import apidata from '../../test-data/api-data/api-module-data.json'
 
 test ("Verify that user is abl to fetch all booking IDs using GET api & receive vlid response",
 {
-    tag: ['@API', '@UAT'],
+    tag: ['@API', '@UAT', '@SMOKE'],
     annotation: {
           type : "test Case ID",
           description : "API_TC_01"

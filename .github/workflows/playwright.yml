@@ -15,7 +15,7 @@ on:
         type: choice
         options: [chromium, firefox, webkit]
       grep:
-        description: 'Tag or text to run, e.g. @smoke (empty = everything)'
+        description: 'Tag or text to run, e.g. @SMOKE (empty = everything)'
 
 permissions:
   contents: read
@@ -30,7 +30,7 @@ env:
   CI: true
   ENV_NAME: SIT
   # push / PR → smoke only · nightly → everything · manual → grep input (empty = everything)
-  GREP: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && '@smoke' || inputs.grep }}
+  GREP: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && '@SMOKE' || inputs.grep }}
 
 #use bash on every OS (Windows defaults to PowerShell, which can't read $PROJECT or ${GREP:+...} so use bash)
 defaults:
