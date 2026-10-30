@@ -77,18 +77,8 @@ jobs:
         run: npm run data:new-joiners
 
       - name: Run UI tests
-        run: >-
-          npx playwright test --project="$PROJECT" ${GREP:+--grep "$GREP"}
+        run: npx playwright test --project="$PROJECT" ${GREP:+--grep "$GREP"}
           --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-
-      # blob report holds results + attachments; merged into one report in merge-reports
-      - name: Upload blob report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-blob-report-shard-${{ matrix.shardIndex }}
-          path: blob-report/
-          retention-days: 1
 
       - name: Upload test results (traces, videos)
         if: ${{ !cancelled() }}
@@ -136,14 +126,6 @@ jobs:
           npx playwright test --project=apiTest ${GREP:+--grep "$GREP"}
           --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Upload blob report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-blob-report-shard-${{ matrix.shardIndex }}
-          path: blob-report/
-          retention-days: 1
-
       - name: Upload Allure results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -152,7 +134,7 @@ jobs:
           path: allure-results/
           retention-days: 14
 
-  # Combines every shard into one HTML + JUnit report per suite, and one Allure results folder
+  # Combines every shard of both suites into one Allure results folder
   merge-reports:
     if: ${{ !cancelled() }}     # run even when tests fail, that's when the report matters most
     needs: [ui-tests, api-tests]
@@ -160,66 +142,6 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*   #Long term support
-          cache: npm
-
-      # same Playwright version as the shards, which merge-reports needs
-      - name: Install dependencies
-        run: npm ci
-
-      # UI and API blobs go to separate folders: both suites name their files report-<shard>.zip
-      - name: Download UI blob reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: ui-blob-report-shard-*
-          path: ui-blob-reports
-          merge-multiple: true
-
-      - name: Download API blob reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: api-blob-report-shard-*
-          path: api-blob-reports
-          merge-multiple: true
-
-      - name: Merge UI report
-        if: ${{ hashFiles('ui-blob-reports/**') != '' }}
-        env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: ui-playwright-report
-          PLAYWRIGHT_JUNIT_OUTPUT_NAME: ui-junit/results.xml
-        run: npx playwright merge-reports --reporter html,junit ./ui-blob-reports
-
-      - name: Merge API report
-        if: ${{ hashFiles('api-blob-reports/**') != '' }}
-        env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: api-playwright-report
-          PLAYWRIGHT_JUNIT_OUTPUT_NAME: api-junit/results.xml
-        run: npx playwright merge-reports --reporter html,junit ./api-blob-reports
-
-      - name: Upload merged UI report
-        uses: actions/upload-artifact@v4
-        with:
-          name: ui-playwright-report
-          path: |
-            ui-playwright-report/
-            ui-junit/
-          retention-days: 14
-          if-no-files-found: ignore
-
-      - name: Upload merged API report
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-playwright-report
-          path: |
-            api-playwright-report/
-            api-junit/
-          retention-days: 14
-          if-no-files-found: ignore
-
       # Allure files have unique names, so all shards of both suites can share one folder
       - name: Download Allure results
         uses: actions/download-artifact@v4
