@@ -11,10 +11,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 3 : undefined,
  //Array of tuples
- // CI shards write a blob report; the merge-reports job turns all shards into one HTML + JUnit report
+ // CI shards write Allure results only; the merge-reports job combines them for publish-allure
   reporter: process.env.CI
     ? [
-        ['blob'],
         ['allure-playwright', { resultsDir: 'allure-results' }],
       ]
     : [

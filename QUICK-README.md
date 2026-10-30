@@ -86,7 +86,7 @@ A short map of the framework: each feature, the files that implement it, and the
 | Tags | specs, data files | `{ tag: ['@smoke', …] }` on `test` / `test.describe`; run with `--grep @smoke` |
 | Traceability | specs | `annotation: { type: 'Jira ID' / 'test Case ID', description }` |
 | Readable steps | specs | `test.step()` shows named steps in the reports |
-| Reports | [playwright.config.ts](playwright.config.ts), [package.json](package.json) | `reporter`: `html`, `allure-playwright`, `junit` locally; `blob` + `allure-playwright` in CI (`process.env.CI`); `allure:serve` script |
+| Reports | [playwright.config.ts](playwright.config.ts), [package.json](package.json) | `reporter`: `html`, `allure-playwright`, `junit` locally; `allure-playwright` only in CI (`process.env.CI`); `allure:serve` script |
 | Failure evidence | [playwright.config.ts](playwright.config.ts) | `trace: 'on-first-retry'`, `screenshot: 'only-on-failure'`, `video: 'retain-on-failure'` |
 
 ## 9. Code quality and CI/CD
@@ -99,7 +99,7 @@ A short map of the framework: each feature, the files that implement it, and the
 | Smart test selection | same | `GREP` env: `@smoke` on push/PR, everything nightly, user input on manual runs |
 | Parallel CI runs | same | `strategy.matrix` sharding (`--shard=i/n`): 3 UI shards, 5 API shards; `fail-fast: false` |
 | Efficient runs | same | `concurrency` cancels older runs; `cache: npm`; installs only the chosen browser |
-| Merged shard reports | same | `merge-reports` job: `actions/download-artifact` (`pattern`, `merge-multiple`) + `npx playwright merge-reports --reporter html,junit`; one report per suite |
+| Merged shard reports | same | `merge-reports` job: `actions/download-artifact` (`pattern`, `merge-multiple`) combines Allure results from every shard into one folder |
 | Allure on GitHub Pages | same | `publish-allure` job (main only): `npm run allure:generate`, history copied from the live site for trends, `actions/upload-pages-artifact` + `actions/deploy-pages` |
 
 ---

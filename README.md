@@ -222,24 +222,21 @@ flowchart LR
 |---|---|
 | `ui-tests` | Lint and type check, install the browser, convert the HR Excel sheet, run the UI project on 3 shards (`chromium` by default) |
 | `api-tests` | Run the `apiTest` project on 5 shards (no browser needed) |
-| `merge-reports` | Combine all shards into one HTML + JUnit report per suite and one Allure results folder. Runs even when tests fail |
+| `merge-reports` | Combine the Allure results from all shards into one folder. Runs even when tests fail |
 | `publish-allure` | Build the Allure report, keep the trend history from the previous run, and deploy it to GitHub Pages. Runs only on `main`, never for a PR |
 
 ### Sharding and merged reports
 
 - Each job uses `strategy.matrix` with `--shard=<index>/<total>`, so the shards run on separate machines at the same time. `fail-fast: false` lets every shard finish even if one fails.
-- In CI, [`playwright.config.ts`](playwright.config.ts) switches to the `blob` reporter. A blob holds a shard's results with its traces, screenshots and videos. Locally you still get the HTML, Allure and JUnit reports.
-- `merge-reports` runs `npx playwright merge-reports --reporter html,junit` on the blobs. UI and API are merged separately because both suites name their blob files `report-<shard>.zip`.
-- Merging needs the same Playwright version as the shards, which `npm ci` guarantees.
+- In CI, [`playwright.config.ts`](playwright.config.ts) uses only the Allure reporter, and each shard uploads its own results. Locally you still get the HTML, Allure and JUnit reports.
+- `merge-reports` downloads the Allure results from every shard into one folder. Both suites can share it because Allure file names are unique.
 
 ### Artifacts on each run
 
 | Artifact | Contents | Kept |
 |---|---|---|
-| `ui-playwright-report` · `api-playwright-report` | One merged HTML report and JUnit XML per suite | 14 days |
 | `allure-results` | Allure results from every shard of both suites | 14 days |
 | `ui-test-results-shard-N` | Raw traces and videos per UI shard | 14 days |
-| `*-blob-report-shard-N` | Shard blobs, input to the merge | 1 day |
 
 ### Allure report on GitHub Pages
 
@@ -311,7 +308,7 @@ Use the same encrypted values as in `.env.SIT`, and store the key on its own wit
 | Tags and traceability | Tags from the data files (`@smoke`, `@regression`, `@pim`); a feature-level tag and `Feature` / `Jira ID` annotations on `describe` and `test`. | [`hrNewJoiners.spec.ts`](tests/ui-tests/hrNewJoiners.spec.ts) |
 | Readable steps | `test.step()` groups actions into named steps that show in the HTML and Allure reports. | data-driven specs |
 | Web-first assertions | `expect(locator).toHaveCount / toContainText / toHaveURL` with auto-retry and no fixed sleeps (lint warns on `waitForTimeout`). | pages and specs |
-| Reporting and debugging | HTML, Allure and JUnit reporters locally; `blob` per shard in CI, merged with `merge-reports`. Trace on first retry; screenshot and video kept only on failure. Allure published to GitHub Pages. | [`playwright.config.ts`](playwright.config.ts), [`playwright.yml`](.github/workflows/playwright.yml) |
+| Reporting and debugging | HTML, Allure and JUnit reporters locally; Allure only in CI, merged with `merge-reports`. Trace on first retry; screenshot and video kept only on failure. Allure published to GitHub Pages. | [`playwright.config.ts`](playwright.config.ts), [`playwright.yml`](.github/workflows/playwright.yml) |
 | CI/CD | GitHub Actions with push, PR, nightly and manual triggers; tag-based selection; lint and type check gate; matrix sharding; merged reports. | [`playwright.yml`](.github/workflows/playwright.yml) |
 | Code quality | Strict TS, `typescript-eslint` with type information, `eslint-plugin-playwright`, and Prettier last to avoid rule conflicts. | [`eslint.config.mjs`](eslint.config.mjs) |
 
