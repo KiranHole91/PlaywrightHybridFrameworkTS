@@ -1,5 +1,5 @@
 import { APIRequestContext, expect } from "@playwright/test";
-import apiendpoints from "../test-data/api-data/api-endoints.json"
+import apiendpoints from "../test-data/api-data/api-endpoints.json"
 import { encryptionDecryption } from "./encryptionDecryption";
 
 export default class CommonAPIUtils{
