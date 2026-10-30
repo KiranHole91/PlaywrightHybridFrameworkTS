@@ -276,6 +276,7 @@ Use the same encrypted values as in `.env.SIT`, and store the key on its own wit
 - New browsers are a new `projects` entry; mobile and branded channels are already stubbed in the config.
 - Login runs once per run via `storageState`, so suite time grows with tests, not with logins.
 - The config is CI-aware: retries, workers and reporters switch on `process.env.CI`.
+- `fullyParallel` is on, so tests run in parallel within a file and shards split by test instead of by spec file.
 - CI shards the suites across machines (3 UI, 5 API) and merges them back into one report.
 
 ### Reusable: write once, use everywhere
@@ -474,7 +475,6 @@ npm i -D https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 
 - **API-backed setup and cleanup:** create and delete employees through the API, so UI tests check only the UI and leave no data behind.
 - **`BasePage`** for shared helpers (toast check, table row lookup, confirm delete) that `PIMPage` and `AdminPage` both repeat today.
-- **Parallel runs:** turn on `fullyParallel` once tests are fully isolated, so shards split by test instead of by spec file.
 
 ### Later
 
