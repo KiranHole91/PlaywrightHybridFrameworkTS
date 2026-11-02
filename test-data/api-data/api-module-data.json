@@ -1,7 +1,5 @@
 {
     "content-type" : "application/json; charset=utf-8",
-    "bookingId" : "1",
-    "firstname" : "Jim",
     "create_Booking" : {
                         "firstname" : "Kiran",
                         "lastname" : "Brown",

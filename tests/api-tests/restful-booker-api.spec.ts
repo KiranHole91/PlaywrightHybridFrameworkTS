@@ -32,15 +32,14 @@ test ("Verify that user is able to fetch booking details using GET API & receive
           type : "test Case ID",
           description : "API_TC_02"
     }
-}, async ({request}) => {
+}, async ({request, bookingId}) => {
 
-    const bookingDetailsResp = await request.get(`${apiendpoints.booking_endpoint}/${apidata.bookingId}`)
+    const bookingDetailsResp = await request.get(`${apiendpoints.booking_endpoint}/${bookingId}`)
      expect (bookingDetailsResp.status()).toBe(200);
      expect (bookingDetailsResp.statusText()).toBe('OK');
 
     const bookingJsonResp = await bookingDetailsResp.json();
-    expect (bookingJsonResp).not.toBeNull();
-    expect (bookingJsonResp.firstname).toEqual(apidata.firstname);
+    expect (bookingJsonResp).toEqual(apidata.create_Booking);
 
 })
 
