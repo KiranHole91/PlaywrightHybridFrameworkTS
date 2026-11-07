@@ -13,9 +13,7 @@ export default defineConfig({
  //Array of tuples
  // CI shards write Allure results only; the merge-reports job combines them for publish-allure
   reporter: process.env.CI
-    ? [
-        ['allure-playwright', { resultsDir: 'allure-results' }],
-      ]
+    ? [   ['allure-playwright', { resultsDir: 'allure-results' }] ]
     : [
         ['html', { open: 'never' }],
         ['allure-playwright', { resultsDir: 'allure-results' }],
@@ -94,16 +92,7 @@ export default defineConfig({
     //   name: 'Microsoft Edge',
     //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
     // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+
   ],
 
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
